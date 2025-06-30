@@ -1,0 +1,5 @@
+__pycache__/
+vcf_files/
+*csv
+*json
+*txt
