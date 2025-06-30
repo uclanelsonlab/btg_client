@@ -86,7 +86,7 @@ def main():
         epilog="""
 Examples:
   python btg_main.py upload --token token.txt                                                       # Run upload module
-  python btg_main.py upload --token token.txt --file-path /path/to/file.vcf.gz --prefix UDN287643-P # Upload with parameters
+  python btg_main.py upload --token token.txt --file-path /path/to/file.vcf.gz --prefix sample-P    # Upload with parameters
   python btg_main.py task   --token token.txt --task-config task_config.json                        # Run task creation module
   python btg_main.py status --token token.txt --submission-id b48e943c42659c5011fa571d80d0e177      # Run status checking module
   python btg_main.py config --token token.txt                                                       # Show current configuration

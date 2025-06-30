@@ -108,7 +108,7 @@ The `task_config.json` file contains default parameters for genetic analysis tas
 ```json
 {
   "title": "sample_cohort_test",
-  "project": "UDN",
+  "project": "samples",
   "vcf_mode": "TRIO",
   "assembly": "hg38",
   "upload_vcf": "sample-P/sample-M_trim_biallelic.vcf.gz",
