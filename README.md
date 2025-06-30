@@ -103,8 +103,50 @@ python btg_main.py config --token token.txt
 
 ### Task Configuration
 
-The `task_config.json` file contains default parameters for genetic analysis tasks:
+The `task_config.json` file contains parameters for genetic analysis tasks. Here's a comprehensive guide to all available options:
 
+#### Required Fields
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| `title` | string | Name of the analysis task | Max 256 characters |
+| `project` | string | Project identifier | Max 256 characters |
+| `vcf_mode` | string | Analysis mode | Must be: `SNP`, `TRIO`, or `CARRIER` |
+| `assembly` | string | Genome assembly version | Must be: `hg19` or `hg38` |
+
+#### VCF Mode-Specific Requirements
+
+**SNP Mode (Proband Analysis):**
+- Requires: `upload_vcf` (proband VCF file)
+- Optional: `upload_father`, `upload_mother`
+
+**TRIO Mode (Family Trio Analysis):**
+- Requires: `upload_vcf` (proband), `upload_father`, `upload_mother`
+- All three VCF files must be provided
+
+**CARRIER Mode (Carrier Analysis):**
+- Requires: `upload_father`, `upload_mother`
+- Optional: `upload_vcf` (proband)
+
+#### Clinical Information (Choose One)
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| `clinical_info` | string | Clinical description text | Max 4096 characters |
+| `upload_clinical` | string | Path to clinical file | File must exist |
+
+#### File Path Fields
+
+| Field | Type | Description | Required For |
+|-------|------|-------------|--------------|
+| `upload_vcf` | string | Path to proband VCF file | SNP, TRIO modes |
+| `upload_father` | string | Path to father's VCF file | TRIO, CARRIER modes |
+| `upload_mother` | string | Path to mother's VCF file | TRIO, CARRIER modes |
+| `upload_cnv` | string | Path to CNV file | Optional for all modes |
+
+#### Example Configurations
+
+**TRIO Analysis Example:**
 ```json
 {
   "title": "sample_cohort_test",
@@ -112,11 +154,66 @@ The `task_config.json` file contains default parameters for genetic analysis tas
   "vcf_mode": "TRIO",
   "assembly": "hg38",
   "upload_vcf": "sample-P/sample-M_trim_biallelic.vcf.gz",
-  "clinical_info": "Clinical description...",
+  "clinical_info": "Sample clinical description for demonstration purposes. Replace with actual clinical information.",
   "upload_father": "sample-P/sample-MGF_trim_biallelic.vcf.gz",
   "upload_mother": "sample-P/sample-MG_trim_biallelic.vcf.gz"
 }
 ```
+
+**SNP Analysis Example:**
+```json
+{
+  "title": "proband_analysis",
+  "project": "research_study",
+  "vcf_mode": "SNP",
+  "assembly": "hg38",
+  "upload_vcf": "data/proband.vcf.gz",
+  "clinical_info": "Patient presents with developmental delay and seizures. Family history of similar conditions.",
+  "upload_cnv": "data/cnv_data.txt"
+}
+```
+
+**CARRIER Analysis Example:**
+```json
+{
+  "title": "carrier_screening",
+  "project": "family_study",
+  "vcf_mode": "CARRIER",
+  "assembly": "hg19",
+  "upload_father": "data/father.vcf.gz",
+  "upload_mother": "data/mother.vcf.gz",
+  "upload_clinical": "data/clinical_summary.pdf"
+}
+```
+
+#### Field Validation Rules
+
+The configuration system validates the following:
+
+1. **Required Fields**: All required fields must be present and non-empty
+2. **VCF Mode Validation**: File requirements are enforced based on the selected mode
+3. **Clinical Information**: Either `clinical_info` or `upload_clinical` must be provided
+4. **Field Length Limits**: Title (256 chars), project (256 chars), clinical_info (4096 chars)
+5. **Valid Values**: vcf_mode and assembly must match allowed values
+
+#### Error Messages
+
+Common validation errors and their solutions:
+
+- `Missing required field: title` → Add a title for your analysis
+- `Invalid vcf_mode: INVALID` → Use one of: SNP, TRIO, CARRIER
+- `Invalid assembly: hg20` → Use one of: hg19, hg38
+- `upload_vcf is required for TRIO mode` → Provide proband VCF file path
+- `Either upload_clinical or clinical_info is required` → Add clinical information
+- `title must be 256 characters or less` → Shorten the title
+
+#### Configuration Tips
+
+1. **File Paths**: Use relative paths from your upload directory or absolute paths
+2. **Clinical Information**: For detailed cases, use `upload_clinical` with a PDF file
+3. **Project Names**: Use consistent project names for related analyses
+4. **Assembly Version**: Ensure all VCF files use the same assembly version
+5. **File Formats**: VCF files should be compressed (.vcf.gz) for faster uploads
 
 ### Supported File Types
 
@@ -125,6 +222,34 @@ The upload module supports the following file formats:
 - `.vcf.gz` - Compressed VCF files
 - `.pdf` - PDF documents
 - `.txt` - Text files
+
+### Configuration Reference
+
+For quick reference, here's a complete list of all configuration fields:
+
+#### Core Fields
+- `title` (required): Analysis task name
+- `project` (required): Project identifier
+- `vcf_mode` (required): Analysis mode (SNP/TRIO/CARRIER)
+- `assembly` (required): Genome assembly (hg19/hg38)
+
+#### VCF File Fields
+- `upload_vcf`: Proband VCF file path
+- `upload_father`: Father's VCF file path
+- `upload_mother`: Mother's VCF file path
+- `upload_cnv`: CNV file path (optional)
+
+#### Clinical Information Fields
+- `clinical_info`: Clinical description text
+- `upload_clinical`: Clinical file path
+
+#### Field Dependencies by Mode
+
+| Mode | Required Files | Optional Files |
+|------|----------------|----------------|
+| SNP | `upload_vcf` | `upload_father`, `upload_mother`, `upload_cnv` |
+| TRIO | `upload_vcf`, `upload_father`, `upload_mother` | `upload_cnv` |
+| CARRIER | `upload_father`, `upload_mother` | `upload_vcf`, `upload_cnv` |
 
 ## 📊 API Endpoints
 
