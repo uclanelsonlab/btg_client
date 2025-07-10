@@ -7,6 +7,7 @@ A modular Python client for interacting with the BT Genomics Virtual Geneticist 
 - **File Upload**: Upload VCF files and other genetic data files to the Virtual Geneticist platform
 - **Task Creation**: Create genetic analysis tasks with configurable parameters
 - **Status Monitoring**: Check the status of submitted tasks and retrieve results
+- **Batch Processing**: Process multiple files and create tasks from CSV files
 - **Interactive Mode**: User-friendly menu-driven interface
 - **Command Line Interface**: Direct module execution with command-line arguments
 - **Modular Design**: Separate modules for different functionalities
@@ -36,13 +37,17 @@ btg_client/
 ├── btg_upload_module.py     # File upload functionality
 ├── btg_task_module.py       # Task creation and management
 ├── btg_status_module.py     # Status checking and monitoring
+├── btg_batch_module.py      # Batch processing functionality
 ├── task_config.json         # Default task configuration
 ├── token.txt               # API token file (create this)
+├── data/                   # Sample data directory
+│   └── samplesheet.csv     # Sample CSV file for batch processing
 ├── vcf_files/              # Sample VCF files directory
 │   ├── sample-M_trim_biallelic.vcf.gz
 │   ├── sample-MGF_trim_biallelic.vcf.gz
 │   ├── sample-MG_trim_biallelic.vcf.gz
 │   └── sample-P_trim_biallelic.vcf.gz
+├── BATCH_USAGE.md          # Batch processing documentation
 └── README.md               # This file
 ```
 
@@ -60,8 +65,11 @@ This will present a menu with the following options:
 1. 📤 Upload File
 2. 🔬 Create Analysis Task
 3. 📊 Check Task Status
-4. ⚙️ Show Current Configuration
-5. 🚪 Exit
+4. 🚀 Batch Upload Files
+5. 🔬 Batch Create Tasks
+6. 🚀 Full Batch Process (Upload + Tasks)
+7. ⚙️ Show Current Configuration
+8. 🚪 Exit
 
 ### Command Line Mode
 
@@ -91,6 +99,19 @@ python btg_main.py task --token token.txt --task-config custom_config.json
 
 ```bash
 python btg_main.py status --token token.txt --submission-id b48e943c42659c5011fa571d80d0e177
+```
+
+#### Batch Processing
+
+```bash
+# Batch upload files from CSV
+python btg_main.py batch-upload --token token.txt --csv-file samples.csv --data-directory /path/to/vcfs
+
+# Batch create tasks from CSV (after upload)
+python btg_main.py batch-task --token token.txt --csv-file samples.csv
+
+# Full batch process (upload + create tasks)
+python btg_main.py batch-full --token token.txt --csv-file samples.csv --data-directory /path/to/vcfs
 ```
 
 #### Show Configuration
@@ -251,6 +272,58 @@ For quick reference, here's a complete list of all configuration fields:
 | TRIO | `upload_vcf`, `upload_father`, `upload_mother` | `upload_cnv` |
 | CARRIER | `upload_father`, `upload_mother` | `upload_vcf`, `upload_cnv` |
 
+## 🚀 Batch Processing
+
+The batch processing functionality allows you to process multiple files and create tasks from CSV files. This is especially useful for handling large datasets with family trios or multiple individual samples.
+
+### CSV File Format
+
+Your CSV file must contain the following columns:
+
+| Column | Description | Required |
+|--------|-------------|----------|
+| `samples` | Sample identifier | Yes |
+| `title` | Task title for this sample | Yes |
+| `project` | Project name | Yes |
+| `vcf_mode` | Analysis mode: `TRIO` or `SNP` | Yes |
+| `assembly` | Genome assembly: `hg19` or `hg38` | Yes |
+| `upload_vcf` | Proband VCF file name | Yes |
+| `upload_father` | Father VCF file name (TRIO mode) or `NA` (SNP mode) | Yes |
+| `upload_mother` | Mother VCF file name (TRIO mode) or `NA` (SNP mode) | Yes |
+| `clinical_info` | Clinical information (optional) | No |
+
+### Example CSV Structure
+
+```csv
+samples,title,project,vcf_mode,assembly,upload_vcf,upload_father,upload_mother,clinical_info
+sample01,sample01_cohort,UDN,TRIO,hg38,sample01_trim_biallelic.vcf.gz,sample02_trim_biallelic.vcf.gz,sample03_trim_biallelic.vcf.gz,Decreased response to growth hormone stimulation test
+sample04,sample04_cohort,UDN,SNP,hg38,sample04.vcf.gz,NA,NA,Small scrotum; Abnormal pinna morphology
+```
+
+### How Batch Processing Works
+
+#### TRIO Mode Processing
+- Each row represents one complete TRIO analysis
+- `upload_vcf` → Proband VCF file
+- `upload_father` → Father VCF file (if not `NA`)
+- `upload_mother` → Mother VCF file (if not `NA`)
+- One task is created per row with available family files
+
+#### SNP Mode Processing
+- Each row represents one SNP analysis
+- `upload_vcf` → Proband VCF file
+- One task per row (father/mother files are `NA`)
+
+### Output Files
+
+The batch process creates several output files:
+
+- `upload_results.json`: Mapping of original filenames to remote paths
+- `task_results.json`: Created task information
+- `batch_results.json`: Complete results from full batch process
+
+For detailed batch processing documentation, see [BATCH_USAGE.md](BATCH_USAGE.md).
+
 ## 📊 API Endpoints
 
 The client interacts with the following BT Genomics Virtual Geneticist API endpoints:
@@ -276,6 +349,12 @@ The client interacts with the following BT Genomics Virtual Geneticist API endpo
 - Monitors task progress and status
 - Retrieves analysis results
 - Provides detailed status information
+
+### Batch Module (`btg_batch_module.py`)
+- Processes CSV files for bulk operations
+- Handles file uploads and task creation in batches
+- Groups samples by family relationships for TRIO analysis
+- Provides comprehensive error handling and reporting
 
 ## 🛠️ Troubleshooting
 
