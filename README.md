@@ -43,10 +43,10 @@ btg_client/
 ├── data/                   # Sample data directory
 │   └── samplesheet.csv     # Sample CSV file for batch processing
 ├── vcf_files/              # Sample VCF files directory
-│   ├── sample-M_trim_biallelic.vcf.gz
-│   ├── sample-MGF_trim_biallelic.vcf.gz
-│   ├── sample-MG_trim_biallelic.vcf.gz
-│   └── sample-P_trim_biallelic.vcf.gz
+│   ├── sample01_trim_biallelic.vcf.gz
+│   ├── sample02_trim_biallelic.vcf.gz
+│   ├── sample03_trim_biallelic.vcf.gz
+│   └── sample04_trim_biallelic.vcf.gz
 ├── BATCH_USAGE.md          # Batch processing documentation
 └── README.md               # This file
 ```
@@ -174,10 +174,10 @@ The `task_config.json` file contains parameters for genetic analysis tasks. Here
   "project": "samples",
   "vcf_mode": "TRIO",
   "assembly": "hg38",
-  "upload_vcf": "sample-P/sample-M_trim_biallelic.vcf.gz",
+  "upload_vcf": "sample04/sample01_trim_biallelic.vcf.gz",
   "clinical_info": "Sample clinical description for demonstration purposes. Replace with actual clinical information.",
-  "upload_father": "sample-P/sample-MGF_trim_biallelic.vcf.gz",
-  "upload_mother": "sample-P/sample-MG_trim_biallelic.vcf.gz"
+  "upload_father": "sample04/sample02_trim_biallelic.vcf.gz",
+  "upload_mother": "sample04/sample03_trim_biallelic.vcf.gz"
 }
 ```
 
@@ -387,7 +387,7 @@ The client interacts with the following BT Genomics Virtual Geneticist API endpo
 
 1. **Upload VCF files**:
    ```bash
-   python btg_main.py upload --token token.txt --file-path vcf_files/sample-M_trim_biallelic.vcf.gz --prefix sample-P
+   python btg_main.py upload --token token.txt --file-path vcf_files/sample01_trim_biallelic.vcf.gz --prefix sample04
    ```
 
 2. **Create analysis task**:

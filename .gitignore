@@ -3,3 +3,9 @@ vcf_files/
 *csv
 *json
 *txt
+data/
+batch_results.json
+upload_results.json
+task_results.json
+simulation_results.json
+task_config*.json
