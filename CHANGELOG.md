@@ -8,10 +8,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Add support for batch processing
 - Implement progress bars for file uploads
 - Add configuration validation GUI
 - Support for additional file formats
+- Enhanced error reporting and logging
+
+## [1.1.0] - 2025-01-27
+
+### Added
+- **Batch Processing Module**: Complete batch upload and task creation functionality
+- **CSV File Support**: Process multiple samples from CSV files
+- **Flexible CSV Structure**: Support for one-row-per-task format with TRIO and SNP modes
+- **Automatic File Organization**: Upload files with title-based directory structure
+- **Intelligent Task Creation**: Group TRIO samples and create individual SNP tasks
+- **Comprehensive Error Handling**: Robust validation and error reporting for batch operations
+- **Output File Generation**: JSON result files for upload and task creation tracking
+
+### Features
+- **Batch Upload**: Upload multiple VCF files from CSV specification
+- **Batch Task Creation**: Create analysis tasks for multiple samples
+- **Full Batch Process**: Combined upload and task creation in one operation
+- **CSV Validation**: Automatic validation of CSV structure and required columns
+- **File Path Handling**: Support for data directory specification and file path resolution
+- **Progress Tracking**: Detailed progress reporting for batch operations
+
+### Technical Details
+- New `btg_batch_module.py` with comprehensive batch processing logic
+- Enhanced main application with batch command-line options
+- Updated interactive menu with batch processing options
+- Support for TRIO mode with father/mother file handling
+- Support for SNP mode with individual sample processing
+- Automatic handling of empty/NA values in CSV columns
+
+### Documentation
+- Complete batch processing guide (`BATCH_USAGE.md`)
+- Updated README with batch functionality documentation
+- CSV format specification and examples
+- Command-line usage examples for all batch operations
+- Troubleshooting guide for batch processing issues
+
+### CSV Format Support
+- Required columns: `samples`, `title`, `project`, `vcf_mode`, `assembly`, `upload_vcf`
+- Optional columns: `upload_father`, `upload_mother`, `clinical_info`
+- Support for both TRIO and SNP analysis modes
+- Automatic handling of empty/NA values for optional family files
 
 ## [1.0.0] - 2025-06-30
 

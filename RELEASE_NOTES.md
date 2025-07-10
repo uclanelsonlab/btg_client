@@ -1,4 +1,127 @@
-# Release Notes - BTG Virtual Geneticist API Client v1.0.0
+# Release Notes - BTG Virtual Geneticist API Client v1.1.0
+
+## 🎉 Major Feature Release: Batch Processing
+
+This release introduces comprehensive batch processing capabilities, allowing users to process multiple samples efficiently using CSV files.
+
+## ✨ New Features
+
+### Batch Processing Module
+- **CSV File Support**: Process multiple samples from structured CSV files
+- **Flexible CSV Format**: Support for one-row-per-task format with TRIO and SNP modes
+- **Automatic File Organization**: Upload files with title-based directory structure
+- **Intelligent Task Creation**: Handle TRIO and SNP modes automatically
+- **Comprehensive Error Handling**: Robust validation and error reporting
+
+### Enhanced Command Line Interface
+- **Batch Upload**: `batch-upload` command for uploading multiple files
+- **Batch Task Creation**: `batch-task` command for creating multiple tasks
+- **Full Batch Process**: `batch-full` command for complete workflow
+- **Interactive Menu**: New batch processing options in interactive mode
+
+### CSV Format Support
+- **Required Columns**: `samples`, `title`, `project`, `vcf_mode`, `assembly`, `upload_vcf`
+- **Optional Columns**: `upload_father`, `upload_mother`, `clinical_info`
+- **TRIO Mode**: Support for proband, father, and mother files
+- **SNP Mode**: Individual sample processing
+- **Empty/NA Handling**: Automatic handling of missing family files
+
+## 🔧 Technical Enhancements
+
+### New Module
+- **btg_batch_module.py**: Complete batch processing implementation
+- **CSV Validation**: Automatic structure and content validation
+- **File Path Resolution**: Support for data directory specification
+- **Progress Tracking**: Detailed progress reporting for batch operations
+
+### Enhanced Main Application
+- **New Command Line Options**: `--csv-file`, `--data-directory`
+- **Updated Interactive Menu**: 8 options including batch processing
+- **Improved Error Handling**: Better validation and error messages
+
+## 📊 Output Files
+
+The batch process generates several tracking files:
+- **upload_results.json**: Mapping of original filenames to remote paths
+- **task_results.json**: Created task information and submission IDs
+- **batch_results.json**: Complete results from full batch process
+
+## 🚀 Usage Examples
+
+### Batch Upload Only
+```bash
+python btg_main.py batch-upload --token token.txt --csv-file samples.csv --data-directory /path/to/vcfs
+```
+
+### Batch Task Creation Only
+```bash
+python btg_main.py batch-task --token token.txt --csv-file samples.csv
+```
+
+### Full Batch Process
+```bash
+python btg_main.py batch-full --token token.txt --csv-file samples.csv --data-directory /path/to/vcfs
+```
+
+### Interactive Mode
+```bash
+python btg_main.py --token token.txt --interactive
+```
+
+## 📋 CSV Format Example
+
+```csv
+samples,title,project,vcf_mode,assembly,upload_vcf,upload_father,upload_mother,clinical_info
+UDN734331,UDN734331_cohort,UDN,TRIO,hg38,UDN734331-41_trim_biallelic.vcf.gz,UDN582748-112_trim_biallelic.vcf.gz,UDN793879-111_trim_biallelic.vcf.gz,Decreased response to growth hormone stimulation test
+UDN282881,UDN282881_cohort,UDN,SNP,hg38,UDN282881-196.vcf.gz,NA,NA,Small scrotum; Abnormal pinna morphology
+```
+
+## 📚 Documentation Updates
+
+- **BATCH_USAGE.md**: Comprehensive batch processing guide
+- **Updated README.md**: New batch functionality documentation
+- **Enhanced Examples**: Command-line and interactive usage examples
+- **Troubleshooting**: Common batch processing issues and solutions
+
+## 🔄 Version History
+
+### v1.1.0 (Batch Processing Release)
+- Added comprehensive batch processing functionality
+- New CSV file support for multiple sample processing
+- Enhanced command-line interface with batch options
+- Complete documentation for batch operations
+- Improved error handling and validation
+
+### v1.0.0 (Initial Release)
+- Initial implementation of all core modules
+- Interactive and command-line interfaces
+- Comprehensive configuration system
+- Complete documentation suite
+- Error handling and validation
+- Support for all analysis modes
+
+## 🛠️ Backward Compatibility
+
+This release maintains full backward compatibility with v1.0.0:
+- All existing command-line options continue to work
+- Configuration file format remains unchanged
+- API endpoints and authentication unchanged
+- Individual module functionality preserved
+
+## 🤝 Contributing
+
+This release adds significant new functionality while maintaining the existing API. For issues related to the API itself, please contact BT Genomics support.
+
+## 📄 License
+
+This project is provided as-is for use with the BT Genomics Virtual Geneticist platform.
+
+---
+
+**Release Date**: January 27, 2025  
+**Version**: 1.1.0  
+**Compatibility**: Python 3.6+  
+**Platform**: Cross-platform (Windows, macOS, Linux)
 
 ## 🎉 Initial Release
 
