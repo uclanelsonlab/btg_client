@@ -223,7 +223,7 @@ Common validation errors and their solutions:
 
 - `Missing required field: title` → Add a title for your analysis
 - `Invalid vcf_mode: INVALID` → Use one of: SNP, TRIO, CARRIER
-- `Invalid assembly: hg20` → Use one of: hg19, hg38
+- `Invalid assembly: hg38` → Use one of: hg19, hg38
 - `upload_vcf is required for TRIO mode` → Provide proband VCF file path
 - `Either upload_clinical or clinical_info is required` → Add clinical information
 - `title must be 256 characters or less` → Shorten the title
