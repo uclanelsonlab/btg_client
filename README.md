@@ -21,6 +21,8 @@ A modular Python client for interacting with the BT Genomics Virtual Geneticist 
 
 ## 🚀 Installation
 
+### Option 1: Direct Installation
+
 1. Clone or download this repository
 2. Install the required dependencies:
 
@@ -30,27 +32,50 @@ pip install -r requirements.txt
 
 3. Place your API token in a text file (e.g., `token.txt`)
 
+### Option 2: Docker (Recommended)
+
+1. Clone or download this repository
+2. Build the Docker image:
+
+```bash
+docker build -t btg-client .
+```
+
+3. Run with Docker Compose:
+
+```bash
+docker-compose up --build
+```
+
+For detailed Docker usage, see [Docker Usage Guide](docs/DOCKER_USAGE.md).
+
 ## 📁 Project Structure
 
 ```
 btg_client/
-├── btg_main.py              # Main application entry point
-├── btg_upload_module.py     # File upload functionality
-├── btg_task_module.py       # Task creation and management
-├── btg_status_module.py     # Status checking and monitoring
-├── btg_batch_module.py      # Batch processing functionality
-├── task_config.json         # Default task configuration
-├── token.txt               # API token file (create this)
-├── data/                   # Sample data directory
-│   └── samplesheet.csv     # Sample CSV file for batch processing
-├── vcf_files/              # Sample VCF files directory
-│   ├── sample01_trim_biallelic.vcf.gz
-│   ├── sample02_trim_biallelic.vcf.gz
-│   ├── sample03_trim_biallelic.vcf.gz
-│   └── sample04_trim_biallelic.vcf.gz
-├── BATCH_USAGE.md          # Batch processing documentation
-└── README.md               # This file
+├── src/                          # 🧬 Source code
+│   ├── __init__.py              # Package initialization
+│   ├── btg_main.py              # Main CLI interface
+│   ├── btg_upload_module.py     # File upload functionality
+│   ├── btg_task_module.py       # Task creation and management
+│   ├── btg_status_module.py     # Status checking and monitoring
+│   └── btg_batch_module.py      # Batch processing functionality
+│
+├── tests/                        # 🧪 Test files and debugging tools
+├── docs/                         # 📚 Documentation
+├── examples/                     # 📋 Example files and configurations
+├── data/                         # 📊 User data directory
+├── btg_client.py                # 🚀 Main entry point
+├── setup.py                     # 📦 Package installation
+└── requirements.txt              # 📋 Python dependencies
 ```
+
+📖 **Documentation**: See `docs/` directory for detailed guides:
+- [Quick Start Guide](docs/QUICK_START.md)
+- [Project Structure](docs/PROJECT_STRUCTURE.md)
+- [Batch Usage Guide](docs/BATCH_USAGE.md)
+- [Release Notes](docs/RELEASE_NOTES.md)
+- [Changelog](docs/CHANGELOG.md)
 
 ## 🔧 Troubleshooting
 
@@ -83,7 +108,7 @@ btg_client/
 Run the client in interactive mode for a user-friendly experience:
 
 ```bash
-python btg_main.py --token token.txt
+python btg_client.py --token token.txt
 ```
 
 This will present a menu with the following options:
@@ -104,45 +129,48 @@ You can also run specific modules directly:
 
 ```bash
 # Basic upload (with progress bar)
-python btg_main.py upload --token token.txt
+python btg_client.py upload --token token.txt
 
 # Upload with specific file and prefix
-python btg_main.py upload --token token.txt --file-path /path/to/file.vcf.gz --prefix UDN287643-P
+python btg_client.py upload --token token.txt --file-path /path/to/file.vcf.gz --prefix UDN287643-P
 
 # Upload without progress bar
-python btg_main.py upload --token token.txt --file-path /path/to/file.vcf.gz --no-progress
+python btg_client.py upload --token token.txt --file-path /path/to/file.vcf.gz --no-progress
+
+# Using Docker
+docker-compose exec btg-client python btg_client.py upload --token token.txt --file-path data/file.vcf.gz --prefix sample
 ```
 
 #### Create Analysis Tasks
 
 ```bash
 # Use default configuration
-python btg_main.py task --token token.txt
+python btg_client.py task --token token.txt
 
 # Use custom configuration file
-python btg_main.py task --token token.txt --task-config custom_config.json
+python btg_client.py task --token token.txt --task-config custom_config.json
 ```
 
 #### Check Task Status
 
 ```bash
-python btg_main.py status --token token.txt --submission-id b48e943c42659c5011fa571d80d0e177
+python btg_client.py status --token token.txt --submission-id b48e943c42659c5011fa571d80d0e177
 ```
 
 #### Batch Processing
 
 ```bash
 # Batch upload files from CSV (with progress bars)
-python btg_main.py batch-upload --token token.txt --csv-file samples.csv
+python btg_client.py batch-upload --token token.txt --csv-file samples.csv
 
 # Batch create tasks from CSV (after upload)
-python btg_main.py batch-task --token token.txt --csv-file samples.csv
+python btg_client.py batch-task --token token.txt --csv-file samples.csv
 
 # Full batch process (upload + create tasks)
-python btg_main.py batch-full --token token.txt --csv-file samples.csv
+python btg_client.py batch-full --token token.txt --csv-file samples.csv
 
 # Batch processing without progress bars
-python btg_main.py batch-full --token token.txt --csv-file samples.csv --no-progress
+python btg_client.py batch-full --token token.txt --csv-file samples.csv --no-progress
 ```
 
 **Note**: The API prevents duplicate task submissions. The batch module automatically adds unique timestamps to task titles to avoid conflicts.
@@ -150,7 +178,7 @@ python btg_main.py batch-full --token token.txt --csv-file samples.csv --no-prog
 #### Show Configuration
 
 ```bash
-python btg_main.py config --token token.txt
+python btg_client.py config --token token.txt
 ```
 
 ## ⚙️ Configuration
@@ -428,17 +456,17 @@ The client interacts with the following BT Genomics Virtual Geneticist API endpo
 
 1. **Upload VCF files**:
    ```bash
-   python btg_main.py upload --token token.txt --file-path vcf_files/sample01_trim_biallelic.vcf.gz --prefix sample04
+   python btg_client.py upload --token token.txt --file-path vcf_files/sample01_trim_biallelic.vcf.gz --prefix sample04
    ```
 
 2. **Create analysis task**:
    ```bash
-   python btg_main.py task --token token.txt
+   python btg_client.py task --token token.txt
    ```
 
 3. **Monitor task status**:
    ```bash
-   python btg_main.py status --token token.txt --submission-id <submission_id>
+   python btg_client.py status --token token.txt --submission-id <submission_id>
    ```
 
 ## 🤝 Contributing
@@ -448,6 +476,16 @@ This is a client application for the BT Genomics Virtual Geneticist API. For iss
 ## 📄 License
 
 This project is provided as-is for use with the BT Genomics Virtual Geneticist platform.
+
+## 📚 Documentation
+
+For detailed documentation and guides, see the `docs/` directory:
+
+- **[Quick Start Guide](docs/QUICK_START.md)** - Get up and running quickly
+- **[Project Structure](docs/PROJECT_STRUCTURE.md)** - Detailed project organization
+- **[Batch Usage Guide](docs/BATCH_USAGE.md)** - Complete batch processing documentation
+- **[Release Notes](docs/RELEASE_NOTES.md)** - Latest features and changes
+- **[Changelog](docs/CHANGELOG.md)** - Version history
 
 ## 🔗 Related Documentation
 

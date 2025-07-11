@@ -1,0 +1,10 @@
+{
+  "title": "Sample Analysis",
+  "project": "Test Project",
+  "vcf_mode": "TRIO",
+  "assembly": "hg38",
+  "upload_vcf": "path/to/proband.vcf.gz",
+  "upload_father": "path/to/father.vcf.gz",
+  "upload_mother": "path/to/mother.vcf.gz",
+  "clinical_info": "Sample clinical information for the patient"
+} 

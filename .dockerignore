@@ -1,3 +1,7 @@
+# Git
+.git
+.gitignore
+
 # Python
 __pycache__/
 *.py[cod]
@@ -48,11 +52,6 @@ Thumbs.db
 *.log
 logs/
 
-# API tokens and sensitive data
-token.txt
-*.token
-secrets.json
-
 # Test results and temporary files
 *.json
 !examples/*.json
@@ -65,7 +64,7 @@ upload_results.json
 task_results.json
 batch_results.json
 
-# Data files
+# Data files (user data should be mounted)
 *.vcf
 *.vcf.gz
 *.txt
@@ -119,3 +118,12 @@ celerybeat.pid
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Token files (should be mounted)
+token.txt
+*.token
+secrets.json 

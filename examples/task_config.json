@@ -1,0 +1,8 @@
+{
+    "title": "UDN765172_test",
+    "project": "UDN",
+    "vcf_mode": "SNP",
+    "assembly": "hg38",
+    "upload_vcf": "UDN765172-P/UDN765172-P_trim_biallelic.vcf.gz",
+    "clinical_info": "Intellectual disability, Spasticity, Parkinsonism, Dystonia, Hyperreflexia, Gait ataxia, Progressive cerebellar ataxia, Unsteady gait, Spinocerebellar tract degeneration, Abnormal muscle tone, Severe expressive language delay, Severe receptive language delay, Chronic constipation."
+  }

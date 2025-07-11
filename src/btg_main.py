@@ -100,16 +100,16 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python btg_main.py upload --token token.txt                                                       # Run upload module
-  python btg_main.py upload --token token.txt --file-path /path/to/file.vcf.gz --prefix sample-P    # Upload with parameters
-  python btg_main.py task   --token token.txt --task-config task_config.json                        # Run task creation module
-  python btg_main.py status --token token.txt --submission-id b48e943c42659c5011fa571d80d0e177      # Run status checking module
-  python btg_main.py batch-upload --token token.txt --csv-file samples.csv                          # Batch upload files (use full paths in CSV)
-  python btg_main.py batch-task --token token.txt --csv-file samples.csv                            # Batch create tasks
-  python btg_main.py batch-full --token token.txt --csv-file samples.csv                            # Full batch process
-  python btg_main.py config --token token.txt                                                       # Show current configuration
-  python btg_main.py --token token.txt --interactive                                                # Run in interactive mode
-  python btg_main.py --token token.txt                                                              # Run in interactive mode (default)
+  python btg_client.py upload --token token.txt                                                       # Run upload module
+  python btg_client.py upload --token token.txt --file-path /path/to/file.vcf.gz --prefix sample-P    # Upload with parameters
+  python btg_client.py task   --token token.txt --task-config task_config.json                        # Run task creation module
+  python btg_client.py status --token token.txt --submission-id b48e943c42659c5011fa571d80d0e177      # Run status checking module
+  python btg_client.py batch-upload --token token.txt --csv-file samples.csv                          # Batch upload files (use full paths in CSV)
+  python btg_client.py batch-task --token token.txt --csv-file samples.csv                            # Batch create tasks
+  python btg_client.py batch-full --token token.txt --csv-file samples.csv                            # Full batch process
+  python btg_client.py config --token token.txt                                                       # Show current configuration
+  python btg_client.py --token token.txt --interactive                                                # Run in interactive mode
+  python btg_client.py --token token.txt                                                              # Run in interactive mode (default)
         """
     )
     

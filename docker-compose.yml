@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  btg-client:
+    build: .
+    container_name: btg-client
+    volumes:
+      # Mount your data directory
+      - ./data:/app/data:ro
+      # Mount your token file
+      - ./token.txt:/app/token.txt:ro
+      # Mount a results directory for output files
+      - ./results:/app/results
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Keep container running
+    command: ["tail", "-f", "/dev/null"]
+    # Interactive mode for development
+    stdin_open: true
+    tty: true 

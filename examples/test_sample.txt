@@ -1,0 +1,6 @@
+##fileformat=VCFv4.2
+##source=TestVCF
+##reference=hg38
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE
+chr1	1000	rs123	A	T	50	PASS	NS=1	GT	0/1
+chr1	2000	rs456	C	G	60	PASS	NS=1	GT	1/1
