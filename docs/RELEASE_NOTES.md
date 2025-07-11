@@ -1,268 +1,352 @@
-# Release Notes - BTG Virtual Geneticist API Client v1.1.0
+# Release Notes
 
-## 🎉 Major Feature Release: Batch Processing
+## [1.2.0] - 2025-07-10
 
-This release introduces comprehensive batch processing capabilities, allowing users to process multiple samples efficiently using CSV files.
+### 🎉 Major Release: Project Reorganization & Docker Support
 
-## ✨ New Features
+This release represents a significant milestone in the BT Genomics Virtual Geneticist API Client, introducing major architectural improvements, Docker containerization, and enhanced user experience features.
 
-### Batch Processing Module
-- **CSV File Support**: Process multiple samples from structured CSV files
-- **Flexible CSV Format**: Support for one-row-per-task format with TRIO and SNP modes
-- **Automatic File Organization**: Upload files with title-based directory structure
-- **Intelligent Task Creation**: Handle TRIO and SNP modes automatically
-- **Comprehensive Error Handling**: Robust validation and error reporting
+### 🚀 New Features
 
-### Enhanced Command Line Interface
-- **Batch Upload**: `batch-upload` command for uploading multiple files
-- **Batch Task Creation**: `batch-task` command for creating multiple tasks
-- **Full Batch Process**: `batch-full` command for complete workflow
-- **Interactive Menu**: New batch processing options in interactive mode
+#### **Docker Containerization**
+- **Complete Docker Support**: Full containerization with Dockerfile and docker-compose.yml
+- **Easy Deployment**: One-command deployment with `docker-compose up`
+- **Consistent Environment**: Eliminates "works on my machine" issues
+- **Production Ready**: Optimized for production deployment
+- **Documentation**: Comprehensive Docker usage guide in `docs/DOCKER_USAGE.md`
 
-### CSV Format Support
-- **Required Columns**: `samples`, `title`, `project`, `vcf_mode`, `assembly`, `upload_vcf`
-- **Optional Columns**: `upload_father`, `upload_mother`, `clinical_info`
-- **TRIO Mode**: Support for proband, father, and mother files
-- **SNP Mode**: Individual sample processing
-- **Empty/NA Handling**: Automatic handling of missing family files
+#### **Project Structure Reorganization**
+- **Modular Architecture**: Moved source files to `src/` directory for better organization
+- **Proper Package Structure**: Added `__init__.py` with version information
+- **Separated Concerns**: Tests in `tests/`, docs in `docs/`, examples in `examples/`
+- **Setup.py**: Proper Python package configuration with dependencies
+- **Distribution Ready**: Package can now be installed via pip
 
-## 🔧 Technical Enhancements
+#### **Enhanced CLI Experience**
+- **New Entry Point**: `btg_client.py` as the primary application entry point
+- **Updated Help Text**: All examples now reference the new entry point
+- **Consistent Interface**: Improved command-line interface across all modules
+- **Better Documentation**: Updated all usage examples and help text
 
-### New Module
-- **btg_batch_module.py**: Complete batch processing implementation
-- **CSV Validation**: Automatic structure and content validation
-- **File Path Resolution**: Support for data directory specification
-- **Progress Tracking**: Detailed progress reporting for batch operations
+#### **Progress Bars for Uploads**
+- **Visual Feedback**: Real-time progress indicators during file uploads
+- **Transfer Rate**: Shows upload speed and estimated time remaining
+- **Batch Progress**: Tracks progress across multiple files in batch operations
+- **Configurable**: Can be disabled with `--no-progress` flag
+- **Cross-platform**: Works on Windows, macOS, and Linux
 
-### Enhanced Main Application
-- **New Command Line Options**: `--csv-file`, `--data-directory`
-- **Updated Interactive Menu**: 8 options including batch processing
-- **Improved Error Handling**: Better validation and error messages
+### 🔧 Technical Improvements
 
-## 📊 Output Files
+#### **Code Organization**
+- **Modular Design**: Improved separation of concerns with proper package structure
+- **Import System**: Updated all imports to use the new `src/` module structure
+- **Error Handling**: Enhanced error handling and user feedback
+- **Documentation**: Comprehensive documentation covering all aspects
 
-The batch process generates several tracking files:
-- **upload_results.json**: Mapping of original filenames to remote paths
-- **task_results.json**: Created task information and submission IDs
-- **batch_results.json**: Complete results from full batch process
+#### **Docker Implementation**
+- **Multi-stage Build**: Optimized Docker image size
+- **Security**: Non-root user execution for better security
+- **Volume Mounting**: Easy data access and configuration
+- **Environment Variables**: Configurable container behavior
+- **Health Checks**: Container health monitoring
 
-## 🚀 Usage Examples
+#### **Package Distribution**
+- **Setup.py**: Proper Python package configuration
+- **Dependencies**: Clear dependency specification
+- **Metadata**: Complete package metadata and description
+- **Installation**: Can be installed via pip or from source
 
-### Batch Upload Only
-```bash
-python btg_main.py batch-upload --token token.txt --csv-file samples.csv --data-directory /path/to/vcfs
-```
+### 📚 Documentation Enhancements
 
-### Batch Task Creation Only
-```bash
-python btg_main.py batch-task --token token.txt --csv-file samples.csv
-```
+#### **New Documentation**
+- **Docker Usage Guide**: Complete Docker setup and usage instructions
+- **Project Structure**: Detailed explanation of the new directory structure
+- **Quick Start Guide**: Step-by-step getting started instructions
+- **Examples**: Comprehensive examples for all features
 
-### Full Batch Process
-```bash
-python btg_main.py batch-full --token token.txt --csv-file samples.csv --data-directory /path/to/vcfs
-```
+#### **Updated Documentation**
+- **README.md**: Updated with new features and Docker support
+- **CLI Help**: All help text updated to reference new entry point
+- **Usage Examples**: Updated examples to reflect new structure
 
-### Interactive Mode
-```bash
-python btg_main.py --token token.txt --interactive
-```
+### 🎯 User Experience Improvements
 
-## 📋 CSV Format Example
+#### **Easier Installation**
+- **Docker**: One-command installation and setup
+- **Pip Installation**: Can be installed as a Python package
+- **Source Installation**: Clear instructions for source installation
 
-```csv
-samples,title,project,vcf_mode,assembly,upload_vcf,upload_father,upload_mother,clinical_info
-UDN734331,UDN734331_cohort,UDN,TRIO,hg38,UDN734331-41_trim_biallelic.vcf.gz,UDN582748-112_trim_biallelic.vcf.gz,UDN793879-111_trim_biallelic.vcf.gz,Decreased response to growth hormone stimulation test
-UDN282881,UDN282881_cohort,UDN,SNP,hg38,UDN282881-196.vcf.gz,NA,NA,Small scrotum; Abnormal pinna morphology
-```
+#### **Better Organization**
+- **Clear Structure**: Logical organization of files and directories
+- **Easy Navigation**: Intuitive directory structure
+- **Separation of Concerns**: Tests, docs, and examples properly organized
 
-## 📚 Documentation Updates
+#### **Enhanced CLI**
+- **Consistent Interface**: Unified command-line experience
+- **Better Help**: Comprehensive help text and examples
+- **Clear Entry Point**: Obvious main application file
 
-- **BATCH_USAGE.md**: Comprehensive batch processing guide
-- **Updated README.md**: New batch functionality documentation
-- **Enhanced Examples**: Command-line and interactive usage examples
-- **Troubleshooting**: Common batch processing issues and solutions
+### 🔄 Migration Guide
 
-## 🔄 Version History
+#### **For Existing Users**
+1. **Update Entry Point**: Use `btg_client.py` instead of `btg_main.py`
+2. **Docker Option**: Consider using Docker for easier deployment
+3. **New Structure**: Familiarize with the new directory organization
+4. **Documentation**: Check the updated documentation for new features
 
-### v1.1.0 (Batch Processing Release)
-- Added comprehensive batch processing functionality
-- New CSV file support for multiple sample processing
-- Enhanced command-line interface with batch options
-- Complete documentation for batch operations
-- Improved error handling and validation
+#### **For New Users**
+1. **Docker First**: Start with Docker for the easiest setup
+2. **Quick Start**: Follow the quick start guide in `docs/QUICK_START.md`
+3. **Examples**: Check the examples directory for usage patterns
+4. **Documentation**: Refer to the comprehensive documentation
 
-### v1.0.0 (Initial Release)
-- Initial implementation of all core modules
-- Interactive and command-line interfaces
-- Comprehensive configuration system
-- Complete documentation suite
-- Error handling and validation
-- Support for all analysis modes
+### 🐛 Bug Fixes
 
-## 🛠️ Backward Compatibility
+- **Upload Progress**: Fixed issues with progress bar display
+- **Module Imports**: Resolved import issues with new structure
+- **CLI Consistency**: Fixed help text and example references
+- **File Organization**: Resolved file path issues in new structure
 
-This release maintains full backward compatibility with v1.0.0:
-- All existing command-line options continue to work
-- Configuration file format remains unchanged
-- API endpoints and authentication unchanged
-- Individual module functionality preserved
+### 📦 Installation Options
 
-## 🤝 Contributing
-
-This release adds significant new functionality while maintaining the existing API. For issues related to the API itself, please contact BT Genomics support.
-
-## 📄 License
-
-This project is provided as-is for use with the BT Genomics Virtual Geneticist platform.
-
----
-
-**Release Date**: January 27, 2025  
-**Version**: 1.1.0  
-**Compatibility**: Python 3.6+  
-**Platform**: Cross-platform (Windows, macOS, Linux)
-
-## 🎉 Initial Release
-
-This is the first official release of the BTG Virtual Geneticist API Client, a comprehensive Python tool for interacting with the BT Genomics Virtual Geneticist platform.
-
-## ✨ Features
-
-### Core Functionality
-- **File Upload Module**: Upload VCF files and other genetic data files to the Virtual Geneticist platform
-- **Task Creation Module**: Create genetic analysis tasks with configurable parameters
-- **Status Monitoring Module**: Check the status of submitted tasks and retrieve results
-
-### User Interface
-- **Interactive Mode**: User-friendly menu-driven interface
-- **Command Line Interface**: Direct module execution with command-line arguments
-- **Modular Design**: Separate modules for different functionalities
-
-### Analysis Modes
-- **SNP Mode**: Proband-only analysis
-- **TRIO Mode**: Family trio analysis (proband + parents)
-- **CARRIER Mode**: Carrier analysis (parents only)
-
-## 🔧 Technical Details
-
-### Supported File Types
-- `.vcf` - Variant Call Format files
-- `.vcf.gz` - Compressed VCF files
-- `.pdf` - PDF documents
-- `.txt` - Text files
-
-### Genome Assemblies
-- `hg19` - Human Genome Build 19
-- `hg38` - Human Genome Build 38
-
-### API Endpoints
-- **Base URL**: `https://vg-api.btgenomics.com:8082/api`
-- **Upload**: `/upload` - File upload endpoint
-- **Tasks**: `/tasks` - Task creation and management
-- **Status**: `/status/{submission_id}` - Status checking
-
-## 📋 Configuration Options
-
-### Required Fields
-- `title`: Analysis task name (max 256 characters)
-- `project`: Project identifier (max 256 characters)
-- `vcf_mode`: Analysis mode (SNP/TRIO/CARRIER)
-- `assembly`: Genome assembly (hg19/hg38)
-
-### VCF File Fields
-- `upload_vcf`: Proband VCF file path
-- `upload_father`: Father's VCF file path
-- `upload_mother`: Mother's VCF file path
-- `upload_cnv`: CNV file path (optional)
-
-### Clinical Information
-- `clinical_info`: Clinical description text (max 4096 characters)
-- `upload_clinical`: Clinical file path
-
-## 🚀 Installation
-
-### Prerequisites
-- Python 3.6 or higher
-- Valid API token from BT Genomics Virtual Geneticist platform
-
-### Quick Start
+#### **Docker (Recommended)**
 ```bash
 # Clone the repository
-git clone https://github.com/uclanelsonlab/btg_client.git
+git clone <repository-url>
 cd btg_client
 
-# Install dependencies
-pip install requests
-
-# Set up your API token
-echo "your_api_token_here" > token.txt
-
-# Run in interactive mode
-python btg_main.py --token token.txt
+# Run with Docker
+docker-compose up
 ```
 
-## 📖 Usage Examples
-
-### Upload Files
+#### **Pip Installation**
 ```bash
-python btg_main.py upload --token token.txt --file-path /path/to/file.vcf.gz --prefix sample-P
+# Install from source
+pip install -e .
 ```
 
-### Create Analysis Task
+#### **Source Installation**
 ```bash
-python btg_main.py task --token token.txt --task-config task_config.json
+# Clone and run directly
+git clone <repository-url>
+cd btg_client
+python btg_client.py --help
 ```
 
-### Check Task Status
-```bash
-python btg_main.py status --token token.txt --submission-id <submission_id>
-```
+### 🎊 What's Next
 
-## 🔒 Security Features
-
-- **Token Management**: Secure token file handling with proper permissions
-- **File Validation**: Comprehensive file type and format validation
-- **Error Handling**: Detailed error messages and validation feedback
-- **Input Sanitization**: Protection against invalid configuration data
-
-## 🛠️ Error Handling
-
-The client provides comprehensive error handling for:
-- Network connectivity issues
-- API authentication failures
-- File validation errors
-- Configuration validation errors
-- Invalid analysis mode combinations
-
-## 📚 Documentation
-
-- **README.md**: Comprehensive user guide with examples
-- **Configuration Guide**: Detailed task_config.json documentation
-- **API Documentation**: Complete endpoint and parameter reference
-- **Troubleshooting**: Common issues and solutions
-
-## 🔄 Version History
-
-### v1.0.0 (Initial Release)
-- Initial implementation of all core modules
-- Interactive and command-line interfaces
-- Comprehensive configuration system
-- Complete documentation suite
-- Error handling and validation
-- Support for all analysis modes
-
-## 🤝 Contributing
-
-This is the initial release of the BTG Virtual Geneticist API Client. For issues related to the API itself, please contact BT Genomics support.
-
-## 📄 License
-
-This project is provided as-is for use with the BT Genomics Virtual Geneticist platform.
+- **Configuration GUI**: Planning a graphical configuration interface
+- **Additional File Formats**: Support for more genetic data formats
+- **Enhanced Logging**: Improved logging and debugging capabilities
+- **Advanced Progress Tracking**: More detailed progress reporting
+- **Plugin System**: Extensible architecture for custom modules
 
 ---
 
-**Release Date**: June 30, 2025  
-**Version**: 1.0.0  
-**Compatibility**: Python 3.6+  
-**Platform**: Cross-platform (Windows, macOS, Linux) 
+## [1.1.0] - 2025-07-10
+
+### 🚀 Major Release: Batch Processing & Progress Tracking
+
+This release introduces comprehensive batch processing capabilities and enhanced user experience features, making the client more powerful and user-friendly for large-scale operations.
+
+### ✨ New Features
+
+#### **Batch Processing Module**
+- **CSV File Support**: Process multiple samples from CSV files
+- **Flexible CSV Structure**: Support for one-row-per-task format
+- **TRIO and SNP Modes**: Automatic handling of family and individual samples
+- **Automatic File Organization**: Upload files with title-based directory structure
+- **Intelligent Task Creation**: Group TRIO samples and create individual SNP tasks
+
+#### **Progress Bars for Uploads**
+- **Real-time Progress**: Visual progress indicators during file uploads
+- **Transfer Rate Display**: Shows upload speed and estimated time remaining
+- **Batch Progress Tracking**: Tracks progress across multiple files
+- **Configurable**: Can be disabled with `--no-progress` flag
+- **Cross-platform**: Works on Windows, macOS, and Linux
+
+#### **Enhanced CSV Support**
+- **Flexible Format**: Support for `upload_vcf`, `upload_father`, `upload_mother` columns
+- **TRIO Mode**: Automatic handling of family trio data
+- **SNP Mode**: Individual sample processing
+- **Empty Value Handling**: Automatic handling of empty/NA values
+- **Validation**: Comprehensive CSV structure validation
+
+### 🔧 Technical Improvements
+
+#### **Upload Progress System**
+- **Custom Progress Bar**: `UploadProgressBar` class with tqdm integration
+- **Graceful Fallback**: Falls back to simple output if tqdm is not available
+- **Transfer Rate**: Real-time upload speed calculation
+- **ETA Calculation**: Estimated time to completion
+- **File Size Display**: Shows total file size and bytes transferred
+
+#### **Batch Processing Architecture**
+- **Modular Design**: Separate batch upload and task creation modules
+- **Error Handling**: Robust validation and error reporting
+- **Output Generation**: JSON result files for tracking
+- **Flexible Configuration**: Support for various CSV formats
+
+#### **CLI Enhancements**
+- **New Batch Commands**: `batch-upload`, `batch-task`, `batch-full`
+- **Interactive Menu**: Updated menu with batch processing options
+- **Help Text**: Comprehensive help and usage examples
+- **Parameter Validation**: Better validation of command-line arguments
+
+### 📊 CSV Format Support
+
+#### **Required Columns**
+- `upload_vcf`: Path to the VCF file for the sample
+- `upload_father`: Path to father's VCF file (optional for SNP)
+- `upload_mother`: Path to mother's VCF file (optional for SNP)
+
+#### **Usage Examples**
+```csv
+upload_vcf,upload_father,upload_mother
+data/sample1.vcf.gz,data/father1.vcf.gz,data/mother1.vcf.gz
+data/sample2.vcf.gz,NA,NA
+```
+
+### 🎯 User Experience Improvements
+
+#### **Visual Feedback**
+- **Progress Bars**: Real-time upload progress with transfer rate
+- **Batch Progress**: Overall progress for batch operations
+- **Error Messages**: Clear and informative error messages
+- **Success Indicators**: Clear confirmation of successful operations
+
+#### **Flexible Configuration**
+- **File Paths**: Support for full file paths in CSV
+- **Data Directory**: Optional data directory specification
+- **Task Titles**: Automatic timestamp suffix for uniqueness
+- **Mode Detection**: Automatic TRIO vs SNP mode detection
+
+### 🔄 Migration from v1.0.0
+
+#### **For Existing Users**
+1. **Update CSV Format**: Use the new one-row-per-sample format
+2. **Enable Progress Bars**: Remove `--no-progress` flag to see progress
+3. **Check File Paths**: Ensure full paths are specified in CSV
+4. **Review Documentation**: Check updated usage examples
+
+#### **For New Users**
+1. **Start with Examples**: Use the provided example CSV files
+2. **Enable Progress**: Use progress bars for better feedback
+3. **Test with Small Files**: Start with small test files
+4. **Check Documentation**: Refer to batch usage guide
+
+### 🐛 Bug Fixes
+
+- **File Upload Issues**: Resolved problems with file uploads and API compatibility
+- **Progress Bar Implementation**: Fixed issues with custom progress file wrapper
+- **Task Creation Errors**: Resolved "Current task already been submitted!" errors
+- **File Path Handling**: Fixed issues with file path resolution in batch operations
+
+### 📦 Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd btg_client
+
+# Run the client
+python btg_main.py --help
+```
+
+### 🎊 What's Next
+
+- **Docker Support**: Containerization for easier deployment
+- **Project Reorganization**: Better code organization and structure
+- **Enhanced Documentation**: More comprehensive guides and examples
+- **Advanced Features**: Additional analysis modes and capabilities
+
+---
+
+## [1.0.0] - 2025-07-10
+
+### 🎉 Initial Release
+
+The first release of the BT Genomics Virtual Geneticist API Client, providing a comprehensive solution for interacting with the Virtual Geneticist API.
+
+### ✨ Core Features
+
+#### **Modular Architecture**
+- **Upload Module**: File upload with progress tracking and prefix support
+- **Task Module**: Analysis task creation with configurable parameters
+- **Status Module**: Task status monitoring and result retrieval
+- **Interactive Mode**: User-friendly menu interface
+- **CLI Mode**: Direct command execution with arguments
+
+#### **File Support**
+- **VCF Files**: Support for VCF and VCF.GZ formats
+- **PDF Files**: Support for PDF documentation
+- **TXT Files**: Support for text files
+- **File Validation**: Comprehensive file format validation
+
+#### **Analysis Modes**
+- **SNP Analysis**: Individual sample analysis
+- **TRIO Analysis**: Family trio analysis
+- **CARRIER Analysis**: Carrier screening analysis
+
+#### **Security & Authentication**
+- **Token-based Authentication**: Secure API access using token files
+- **File Validation**: Comprehensive input validation
+- **Error Handling**: Robust error handling and user feedback
+
+### 🔧 Technical Foundation
+
+#### **Python Compatibility**
+- **Python 3.7+**: Modern Python features and syntax
+- **Cross-platform**: Works on Windows, macOS, and Linux
+- **Dependencies**: Minimal external dependencies
+
+#### **HTTP Client**
+- **Requests Library**: Robust HTTP requests with proper error handling
+- **JSON Processing**: Configuration and data handling
+- **File Operations**: Secure file handling and validation
+
+#### **User Interface**
+- **Interactive Menu**: Menu-driven interface for easy navigation
+- **Command-line Interface**: Direct command execution
+- **Progress Tracking**: Visual feedback for long-running operations
+
+### 📚 Documentation
+
+#### **Complete Documentation Suite**
+- **README.md**: Installation and usage instructions
+- **Configuration Guide**: Task configuration reference
+- **API Documentation**: Endpoint documentation
+- **Troubleshooting Guide**: Common issues and solutions
+- **Usage Examples**: Examples for all analysis modes
+
+### 🎯 User Experience
+
+#### **Easy to Use**
+- **Interactive Mode**: Menu-driven interface for beginners
+- **CLI Mode**: Command-line interface for automation
+- **Clear Documentation**: Comprehensive guides and examples
+- **Error Messages**: Informative error messages and help
+
+#### **Flexible Configuration**
+- **JSON Configuration**: Flexible task configuration system
+- **Token Management**: Secure token file handling
+- **File Organization**: Prefix-based file organization
+- **Status Monitoring**: Real-time status checking
+
+### 📦 Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd btg_client
+
+# Run the client
+python btg_main.py --help
+```
+
+### 🎊 What's Next
+
+- **Batch Processing**: Support for processing multiple files
+- **Progress Bars**: Visual progress indicators
+- **Enhanced Error Handling**: More detailed error reporting
+- **Additional File Formats**: Support for more genetic data formats 

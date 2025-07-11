@@ -1,123 +1,88 @@
 # Changelog
 
-All notable changes to the BTG Virtual Geneticist API Client will be documented in this file.
+All notable changes to the BT Genomics Virtual Geneticist API Client will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
-
-### Planned
-- Add configuration validation GUI
-- Support for additional file formats
-- Enhanced error reporting and logging
-- Advanced progress tracking features
-
-## [1.1.0] - 2025-01-27
+## [1.2.0] - 2025-07-10
 
 ### Added
-- **Batch Processing Module**: Complete batch upload and task creation functionality
-- **CSV File Support**: Process multiple samples from CSV files
-- **Flexible CSV Structure**: Support for one-row-per-task format with TRIO and SNP modes
-- **Automatic File Organization**: Upload files with title-based directory structure
-- **Intelligent Task Creation**: Group TRIO samples and create individual SNP tasks
-- **Comprehensive Error Handling**: Robust validation and error reporting for batch operations
-- **Output File Generation**: JSON result files for upload and task creation tracking
-- **Progress Bars**: Real-time progress tracking for file uploads with transfer rate and ETA
-- **Configurable Progress**: Option to disable progress bars with `--no-progress` flag
+- **Progress bars for file uploads**: Added visual progress indicators using `tqdm` for better user experience during file uploads
+- **Docker support**: Complete Docker containerization with Dockerfile, docker-compose.yml, and comprehensive Docker usage documentation
+- **Project structure reorganization**: Moved source files to `src/` directory, tests to `tests/`, documentation to `docs/`, and examples to `examples/`
+- **New main entry point**: Created `btg_client.py` as the primary entry point for the application
+- **Setup.py**: Added proper Python package configuration with dependencies and metadata
+- **Comprehensive documentation**: Added Docker usage guide, project structure documentation, and quick start guide
+- **CLI improvements**: Updated all help text and examples to reference the new `btg_client.py` entry point
+- **Enhanced examples**: Added various test files and sample configurations in the examples directory
 
-### Features
-- **Batch Upload**: Upload multiple VCF files from CSV specification
-- **Batch Task Creation**: Create analysis tasks for multiple samples
-- **Full Batch Process**: Combined upload and task creation in one operation
-- **CSV Validation**: Automatic validation of CSV structure and required columns
-- **File Path Handling**: Support for data directory specification and file path resolution
-- **Progress Tracking**: Detailed progress reporting for batch operations
+### Changed
+- **CLI entry point**: Changed from `btg_main.py` to `btg_client.py` for better clarity
+- **Import structure**: Updated all imports to use the new `src/` module structure
+- **Documentation organization**: Moved all documentation files to `docs/` directory for better organization
+- **File organization**: Reorganized project structure for better maintainability and distribution
 
-### Technical Details
-- New `btg_batch_module.py` with comprehensive batch processing logic
-- Enhanced main application with batch command-line options
-- Updated interactive menu with batch processing options
-- Support for TRIO mode with father/mother file handling
-- Support for SNP mode with individual sample processing
-- Automatic handling of empty/NA values in CSV columns
-- Custom `UploadProgressBar` class with tqdm integration
-- Graceful fallback when tqdm is not available
-- Progress tracking for both individual and batch uploads
+### Fixed
+- **Upload progress tracking**: Fixed issues with progress bar display during file uploads
+- **Module imports**: Ensured all modules work correctly with the new directory structure
 
-### Documentation
-- Complete batch processing guide (`BATCH_USAGE.md`)
-- Updated README with batch functionality documentation
-- CSV format specification and examples
-- Command-line usage examples for all batch operations
-- Troubleshooting guide for batch processing issues
+### Technical Improvements
+- **Modular architecture**: Improved code organization with proper package structure
+- **Docker containerization**: Full containerization support for easy deployment and distribution
+- **Package distribution**: Added setup.py for proper Python package installation
+- **Documentation**: Comprehensive documentation covering all aspects of the project
 
-### CSV Format Support
-- Required columns: `samples`, `title`, `project`, `vcf_mode`, `assembly`, `upload_vcf`
-- Optional columns: `upload_father`, `upload_mother`, `clinical_info`
-- Support for both TRIO and SNP analysis modes
-- Automatic handling of empty/NA values for optional family files
-
-### Progress Bar Features
-- **Real-time Progress**: Shows upload progress with file size and transfer rate
-- **Batch Progress**: Tracks progress across multiple files in batch operations
-- **Configurable**: Can be disabled with `--no-progress` flag
-- **Cross-platform**: Works on Windows, macOS, and Linux
-- **Graceful Fallback**: Falls back to simple output if tqdm is not available
-
-## [1.0.0] - 2025-06-30
+## [1.1.0] - 2025-07-10
 
 ### Added
-- Initial release of BTG Virtual Geneticist API Client
-- File upload module with support for VCF, PDF, and TXT files
-- Task creation module with configurable parameters
-- Status monitoring module for tracking analysis progress
-- Interactive mode with user-friendly menu interface
-- Command-line interface with argument parsing
-- Support for three analysis modes: SNP, TRIO, and CARRIER
-- Comprehensive configuration system with JSON-based task configuration
-- File validation and error handling
-- Token-based authentication system
-- Cross-platform compatibility (Windows, macOS, Linux)
-- Complete documentation suite including README and configuration guide
+- **Batch processing capabilities**: Added comprehensive batch upload and task creation functionality
+- **CSV file support**: Support for processing CSV files with sample data for bulk operations
+- **Progress tracking**: Visual progress bars for upload operations
+- **Flexible file paths**: Support for full file paths in CSV files
+- **Task title uniqueness**: Automatic timestamp suffix to prevent duplicate task titles
+- **Comprehensive error handling**: Better error messages and validation for batch operations
+
+### Changed
+- **CSV format**: Updated to support one line per sample with `upload_vcf`, `upload_father`, and `upload_mother` columns
+- **Upload progress**: Enhanced progress bar implementation with custom `UploadProgressBar` class
+- **CLI interface**: Added new batch commands and improved help text
+- **Documentation**: Updated usage examples and documentation to reflect new features
+
+### Fixed
+- **File upload issues**: Resolved problems with file uploads and API compatibility
+- **Progress bar implementation**: Fixed issues with custom progress file wrapper
+- **Task creation**: Resolved "Current task already been submitted!" errors with unique titles
+- **File path handling**: Fixed issues with file path resolution in batch operations
+
+### Technical Improvements
+- **Upload reliability**: Improved file upload success rate and error handling
+- **Batch processing**: Robust batch upload and task creation with proper validation
+- **User experience**: Better progress indicators and error messages
+- **Code organization**: Improved module structure and error handling
+
+## [1.0.0] - 2025-07-10
+
+### Added
+- **Core API client functionality**: Basic upload, task creation, and status checking capabilities
+- **Modular architecture**: Separate modules for upload, task, status, and batch operations
+- **Interactive CLI**: Menu-driven interface for easy navigation
+- **Command-line interface**: Direct command execution with various options
+- **Token-based authentication**: Secure API access using token files
+- **File upload support**: Support for VCF, VCF.GZ, PDF, and TXT files
+- **Task configuration**: JSON-based task configuration system
+- **Status monitoring**: Real-time task status checking
+- **Error handling**: Comprehensive error handling and user feedback
+- **Documentation**: Complete usage documentation and examples
 
 ### Features
-- **Upload Module**: Secure file upload with prefix-based organization
-- **Task Module**: Flexible task creation with mode-specific validation
-- **Status Module**: Real-time status checking and result retrieval
-- **Configuration System**: JSON-based configuration with validation rules
-- **Error Handling**: Comprehensive error messages and troubleshooting
-- **Security**: Secure token management and file validation
+- **Upload Module**: File upload with progress tracking and prefix support
+- **Task Module**: Analysis task creation with configurable parameters
+- **Status Module**: Task status monitoring and result retrieval
+- **Batch Module**: Bulk operations for multiple files and tasks
+- **Interactive Mode**: User-friendly menu interface
+- **CLI Mode**: Direct command execution with arguments
 
-### Technical Details
-- Python 3.6+ compatibility
-- Requests library for HTTP communication
-- JSON configuration format
-- Modular architecture for easy maintenance
-- Comprehensive input validation
-- Detailed logging and error reporting
-
-### Documentation
-- Complete README with installation and usage instructions
-- Configuration reference with all available options
-- API endpoint documentation
-- Troubleshooting guide
-- Usage examples for all analysis modes
-
----
-
-## Version Numbering
-
-This project follows [Semantic Versioning](https://semver.org/):
-
-- **MAJOR** version for incompatible API changes
-- **MINOR** version for backwards-compatible functionality additions
-- **PATCH** version for backwards-compatible bug fixes
-
-## Release Process
-
-1. Update version numbers in relevant files
-2. Update CHANGELOG.md with new version
-3. Create and push Git tag
-4. Create GitHub release with release notes
-5. Update documentation if needed 
+### Technical Foundation
+- **Python 3.7+ compatibility**: Modern Python features and syntax
+- **HTTP client**: Robust HTTP requests with proper error handling
+- **JSON processing**: Configuration and data handling
+- **File operations**: Secure file handling and validation
+- **Progress tracking**: Visual feedback for long-running operations 

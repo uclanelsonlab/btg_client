@@ -24,7 +24,7 @@ def read_requirements():
 
 setup(
     name="btg-client",
-    version="1.1.0",
+    version="1.2.0",
     description="A modular Python client for the BT Genomics Virtual Geneticist API",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
