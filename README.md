@@ -8,6 +8,7 @@ A modular Python client for interacting with the BT Genomics Virtual Geneticist 
 - **Task Creation**: Create genetic analysis tasks with configurable parameters
 - **Status Monitoring**: Check the status of submitted tasks and retrieve results
 - **Batch Processing**: Process multiple files and create tasks from CSV files
+- **Progress Bars**: Real-time progress tracking for file uploads
 - **Interactive Mode**: User-friendly menu-driven interface
 - **Command Line Interface**: Direct module execution with command-line arguments
 - **Modular Design**: Separate modules for different functionalities
@@ -24,7 +25,7 @@ A modular Python client for interacting with the BT Genomics Virtual Geneticist 
 2. Install the required dependencies:
 
 ```bash
-pip install requests
+pip install -r requirements.txt
 ```
 
 3. Place your API token in a text file (e.g., `token.txt`)
@@ -50,6 +51,30 @@ btg_client/
 ├── BATCH_USAGE.md          # Batch processing documentation
 └── README.md               # This file
 ```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**"Current task already been submitted!" Error**
+- **Cause**: The API prevents duplicate task submissions based on title and project
+- **Solution**: The batch module automatically adds unique timestamps to avoid this
+- **Manual Fix**: Use different titles in your CSV file
+
+**"only pdf/txt/vcf/vcf.gz file is accepted" Error**
+- **Cause**: File format validation or path issues
+- **Solution**: Ensure files are valid VCF format and paths are correct
+- **Check**: Use full paths in CSV (e.g., `data/file.vcf.gz`)
+
+**Upload Progress Bar Issues**
+- **Cause**: Custom progress bar implementation conflicts
+- **Solution**: Use `--no-progress` flag to disable progress bars
+- **Alternative**: The latest version has fixed progress bar issues
+
+**File Not Found Errors**
+- **Cause**: Incorrect file paths in CSV
+- **Solution**: Use absolute or relative paths from the current directory
+- **Example**: `data/UDN734331-41_trim_biallelic.vcf.gz`
 
 ## 🎯 Usage
 
@@ -78,11 +103,14 @@ You can also run specific modules directly:
 #### Upload Files
 
 ```bash
-# Basic upload
+# Basic upload (with progress bar)
 python btg_main.py upload --token token.txt
 
 # Upload with specific file and prefix
 python btg_main.py upload --token token.txt --file-path /path/to/file.vcf.gz --prefix UDN287643-P
+
+# Upload without progress bar
+python btg_main.py upload --token token.txt --file-path /path/to/file.vcf.gz --no-progress
 ```
 
 #### Create Analysis Tasks
@@ -104,15 +132,20 @@ python btg_main.py status --token token.txt --submission-id b48e943c42659c5011fa
 #### Batch Processing
 
 ```bash
-# Batch upload files from CSV
-python btg_main.py batch-upload --token token.txt --csv-file samples.csv --data-directory /path/to/vcfs
+# Batch upload files from CSV (with progress bars)
+python btg_main.py batch-upload --token token.txt --csv-file samples.csv
 
 # Batch create tasks from CSV (after upload)
 python btg_main.py batch-task --token token.txt --csv-file samples.csv
 
 # Full batch process (upload + create tasks)
-python btg_main.py batch-full --token token.txt --csv-file samples.csv --data-directory /path/to/vcfs
+python btg_main.py batch-full --token token.txt --csv-file samples.csv
+
+# Batch processing without progress bars
+python btg_main.py batch-full --token token.txt --csv-file samples.csv --no-progress
 ```
+
+**Note**: The API prevents duplicate task submissions. The batch module automatically adds unique timestamps to task titles to avoid conflicts.
 
 #### Show Configuration
 
@@ -355,6 +388,14 @@ The client interacts with the following BT Genomics Virtual Geneticist API endpo
 - Handles file uploads and task creation in batches
 - Groups samples by family relationships for TRIO analysis
 - Provides comprehensive error handling and reporting
+- Includes progress bars for batch uploads
+
+### Progress Bar Features
+- **Real-time Progress**: Shows upload progress with file size and transfer rate
+- **Batch Progress**: Tracks progress across multiple files in batch operations
+- **Configurable**: Can be disabled with `--no-progress` flag
+- **Cross-platform**: Works on Windows, macOS, and Linux
+- **Graceful Fallback**: Falls back to simple output if tqdm is not available
 
 ## 🛠️ Troubleshooting
 

@@ -56,57 +56,74 @@ def validate_csv_structure(data: List[Dict[str, str]]) -> List[str]:
     
     return errors
 
-def upload_file_batch(file_path: str, token: str, prefix: str = None) -> Optional[str]:
-    """Upload a file and return the remote path."""
+def upload_file_batch(file_path: str, token: str, prefix: str = None, show_progress: bool = True) -> Optional[str]:
+    """Upload a file and return the remote path with progress bar."""
     
     if not os.path.exists(file_path):
         print(f"❌ File not found: {file_path}")
         return None
     
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
-    
-    files = {
-        'file': open(file_path, 'rb')
-    }
-    
-    data = {}
-    if prefix:
-        data['prefix'] = prefix
-    
+    # Import the upload function from the upload module
     try:
-        print(f"📤 Uploading {file_path}...")
-        response = requests.post(UPLOAD_URL, headers=headers, files=files, data=data)
-        
-        files['file'].close()
-        
-        if response.status_code == 200:
-            result = response.json()
-            remote_path = result.get('upload_path')
-            print(f"✅ Upload successful: {remote_path}")
-            return remote_path
-        else:
-            print(f"❌ Upload failed for {file_path}: {response.status_code}")
-            try:
-                error_msg = response.json().get('message', 'Unknown error')
-                print(f"Error message: {error_msg}")
-            except:
-                print(f"Response text: {response.text}")
-            return None
-            
-    except Exception as e:
-        print(f"❌ Error uploading {file_path}: {e}")
+        from btg_upload_module import upload_file
+        result = upload_file(file_path, token, prefix, show_progress)
+        if result:
+            return result.get('upload_path')
         return None
+    except ImportError:
+        # Fallback to basic upload if import fails
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+        
+        files = {
+            'file': open(file_path, 'rb')
+        }
+        
+        data = {}
+        if prefix:
+            data['prefix'] = prefix
+        
+        try:
+            print(f"📤 Uploading {file_path}...")
+            response = requests.post(UPLOAD_URL, headers=headers, files=files, data=data)
+            
+            files['file'].close()
+            
+            if response.status_code == 200:
+                result = response.json()
+                remote_path = result.get('upload_path')
+                print(f"✅ Upload successful: {remote_path}")
+                return remote_path
+            else:
+                print(f"❌ Upload failed for {file_path}: {response.status_code}")
+                try:
+                    error_msg = response.json().get('message', 'Unknown error')
+                    print(f"Error message: {error_msg}")
+                except:
+                    print(f"Response text: {response.text}")
+                return None
+                
+        except Exception as e:
+            print(f"❌ Error uploading {file_path}: {e}")
+            return None
 
 def process_samples_individual(data: List[Dict[str, str]]) -> List[Dict[str, str]]:
     """Process each sample row individually for task creation."""
     processed_samples = []
     
-    for row in data:
-        # Create a task config for this sample
+    # Add timestamp to make titles unique
+    import time
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    
+    for i, row in enumerate(data):
+        # Create a task config for this sample with unique title
+        original_title = row['title']
+        unique_title = f"{original_title}_{timestamp}"
+        
         task_config = {
-            'title': row['title'],
+            'title': unique_title,
             'project': row['project'],
             'vcf_mode': row['vcf_mode'],
             'assembly': row['assembly'],
@@ -153,6 +170,13 @@ def create_task_batch(config: Dict[str, str], token: str) -> Optional[str]:
             try:
                 error_msg = response.json().get('message', 'Unknown error')
                 print(f"Error message: {error_msg}")
+                
+                # Handle duplicate submission error
+                if "already been submitted" in error_msg:
+                    print(f"💡 This task has already been submitted. The API prevents duplicate submissions.")
+                    print(f"💡 Try using different titles or check if the task already exists.")
+                    return None
+                    
             except:
                 print(f"Response text: {response.text}")
             return None
@@ -161,8 +185,14 @@ def create_task_batch(config: Dict[str, str], token: str) -> Optional[str]:
         print(f"❌ Error creating task: {e}")
         return None
 
-def run_batch_upload_module(token_file_path: str, csv_file_path: str, data_directory: str = None):
-    """Run the batch upload module."""
+def run_batch_upload_module(token_file_path: str, csv_file_path: str, show_progress: bool = True):
+    """Run the batch upload module.
+    
+    Args:
+        token_file_path: Path to token file
+        csv_file_path: Path to CSV file
+        show_progress: Whether to show upload progress bars
+    """
     print("\n" + "="*60)
     print("📤 BATCH UPLOAD MODULE")
     print("="*60)
@@ -187,43 +217,37 @@ def run_batch_upload_module(token_file_path: str, csv_file_path: str, data_direc
         
         # Upload files
         uploaded_files = {}
-        for row in data:
+        total_files = len(data)
+        for i, row in enumerate(data, 1):
+            print(f"\n📁 Processing file {i}/{total_files}")
+            
             # Upload proband VCF
             vcf_file = row['upload_vcf']
             title = row['title']
             
-            # Construct full file path
-            if data_directory:
-                full_path = os.path.join(data_directory, vcf_file)
-            else:
-                full_path = vcf_file
+            # Use full path from CSV directly
+            full_path = vcf_file
             
             # Upload with title as prefix
-            remote_path = upload_file_batch(full_path, token, title)
+            remote_path = upload_file_batch(full_path, token, title, show_progress=show_progress)
             if remote_path:
                 uploaded_files[vcf_file] = remote_path
             
             # Upload father VCF for TRIO mode
             if row['vcf_mode'] == 'TRIO' and row.get('upload_father') and row['upload_father'] != 'NA':
                 father_file = row['upload_father']
-                if data_directory:
-                    full_path = os.path.join(data_directory, father_file)
-                else:
-                    full_path = father_file
+                full_path = father_file  # Use full path from CSV directly
                 
-                remote_path = upload_file_batch(full_path, token, title)
+                remote_path = upload_file_batch(full_path, token, title, show_progress=show_progress)
                 if remote_path:
                     uploaded_files[father_file] = remote_path
             
             # Upload mother VCF for TRIO mode
             if row['vcf_mode'] == 'TRIO' and row.get('upload_mother') and row['upload_mother'] != 'NA':
                 mother_file = row['upload_mother']
-                if data_directory:
-                    full_path = os.path.join(data_directory, mother_file)
-                else:
-                    full_path = mother_file
+                full_path = mother_file  # Use full path from CSV directly
                 
-                remote_path = upload_file_batch(full_path, token, title)
+                remote_path = upload_file_batch(full_path, token, title, show_progress=show_progress)
                 if remote_path:
                     uploaded_files[mother_file] = remote_path
         
@@ -325,7 +349,7 @@ def run_batch_task_module(token_file_path: str, csv_file_path: str, uploaded_fil
         print(f"❌ Error in batch task creation: {e}")
         return None
 
-def run_batch_full_module(token_file_path: str, csv_file_path: str, data_directory: str = None):
+def run_batch_full_module(token_file_path: str, csv_file_path: str, show_progress: bool = True):
     """Run the complete batch process (upload + task creation)."""
     print("\n" + "="*70)
     print("🚀 BATCH PROCESSING MODULE")
@@ -334,7 +358,7 @@ def run_batch_full_module(token_file_path: str, csv_file_path: str, data_directo
     print("="*70)
     
     # Step 1: Upload files
-    uploaded_files = run_batch_upload_module(token_file_path, csv_file_path, data_directory)
+    uploaded_files = run_batch_upload_module(token_file_path, csv_file_path, show_progress)
     if not uploaded_files:
         print("❌ Upload phase failed. Stopping batch process.")
         return
@@ -364,11 +388,11 @@ if __name__ == "__main__":
     import sys
     
     if len(sys.argv) < 3:
-        print("Usage: python btg_batch_module.py <token_file> <csv_file> [data_directory]")
+        print("Usage: python btg_batch_module.py <token_file> <csv_file>")
+        print("Note: Use full paths in CSV file (e.g., 'data/file.vcf.gz')")
         sys.exit(1)
     
     token_file = sys.argv[1]
     csv_file = sys.argv[2]
-    data_directory = sys.argv[3] if len(sys.argv) > 3 else None
     
-    run_batch_full_module(token_file, csv_file, data_directory) 
+    run_batch_full_module(token_file, csv_file) 

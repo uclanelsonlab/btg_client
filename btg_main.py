@@ -67,7 +67,7 @@ def interactive_mode(token_file_path=None):
         choice = input("\nEnter your choice (1-8): ").strip()
         
         if choice == "1":
-            run_upload_module(token_file_path)
+            run_upload_module(token_file_path, show_progress=not args.no_progress)
         elif choice == "2":
             submission_id = run_create_task_module(token_file_path)
             if submission_id:
@@ -76,19 +76,13 @@ def interactive_mode(token_file_path=None):
             run_status_check_module(token_file_path)
         elif choice == "4":
             csv_file = input("Enter CSV file path: ").strip()
-            data_dir = input("Enter data directory (optional, press Enter to skip): ").strip()
-            if not data_dir:
-                data_dir = None
-            run_batch_upload_module(token_file_path, csv_file, data_dir)
+            run_batch_upload_module(token_file_path, csv_file, show_progress=not args.no_progress)
         elif choice == "5":
             csv_file = input("Enter CSV file path: ").strip()
             run_batch_task_module(token_file_path, csv_file)
         elif choice == "6":
             csv_file = input("Enter CSV file path: ").strip()
-            data_dir = input("Enter data directory (optional, press Enter to skip): ").strip()
-            if not data_dir:
-                data_dir = None
-            run_batch_full_module(token_file_path, csv_file, data_dir)
+            run_batch_full_module(token_file_path, csv_file, show_progress=not args.no_progress)
         elif choice == "7":
             show_configuration()
         elif choice == "8":
@@ -110,9 +104,9 @@ Examples:
   python btg_main.py upload --token token.txt --file-path /path/to/file.vcf.gz --prefix sample-P    # Upload with parameters
   python btg_main.py task   --token token.txt --task-config task_config.json                        # Run task creation module
   python btg_main.py status --token token.txt --submission-id b48e943c42659c5011fa571d80d0e177      # Run status checking module
-  python btg_main.py batch-upload --token token.txt --csv-file samples.csv --data-directory /path/to/vcfs  # Batch upload files
-  python btg_main.py batch-task --token token.txt --csv-file samples.csv                              # Batch create tasks
-  python btg_main.py batch-full --token token.txt --csv-file samples.csv --data-directory /path/to/vcfs  # Full batch process
+  python btg_main.py batch-upload --token token.txt --csv-file samples.csv                          # Batch upload files (use full paths in CSV)
+  python btg_main.py batch-task --token token.txt --csv-file samples.csv                            # Batch create tasks
+  python btg_main.py batch-full --token token.txt --csv-file samples.csv                            # Full batch process
   python btg_main.py config --token token.txt                                                       # Show current configuration
   python btg_main.py --token token.txt --interactive                                                # Run in interactive mode
   python btg_main.py --token token.txt                                                              # Run in interactive mode (default)
@@ -150,9 +144,12 @@ Examples:
         help='Path to the CSV file (for batch modules)'
     )
     
+
+    
     parser.add_argument(
-        '--data-directory', '-d',
-        help='Directory containing the VCF files (for batch modules)'
+        '--no-progress', '-np',
+        action='store_true',
+        help='Disable progress bars for uploads'
     )
     
     parser.add_argument(
@@ -179,7 +176,7 @@ Examples:
     print_banner()
     
     if args.module == 'upload':
-        run_upload_module(args.token, args.file_path, args.prefix)
+        run_upload_module(args.token, args.file_path, args.prefix, show_progress=not args.no_progress)
     elif args.module == 'task':
         submission_id = run_create_task_module(args.token, args.task_config)
         if submission_id:
@@ -190,7 +187,7 @@ Examples:
         if not args.csv_file:
             print("❌ CSV file path is required for batch upload. Use --csv-file option.")
             return
-        run_batch_upload_module(args.token, args.csv_file, args.data_directory)
+        run_batch_upload_module(args.token, args.csv_file, show_progress=not args.no_progress)
     elif args.module == 'batch-task':
         if not args.csv_file:
             print("❌ CSV file path is required for batch task creation. Use --csv-file option.")
@@ -200,7 +197,7 @@ Examples:
         if not args.csv_file:
             print("❌ CSV file path is required for batch full process. Use --csv-file option.")
             return
-        run_batch_full_module(args.token, args.csv_file, args.data_directory)
+        run_batch_full_module(args.token, args.csv_file, show_progress=not args.no_progress)
     elif args.module == 'config':
         show_configuration()
 

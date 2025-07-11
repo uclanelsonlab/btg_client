@@ -8,10 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Implement progress bars for file uploads
 - Add configuration validation GUI
 - Support for additional file formats
 - Enhanced error reporting and logging
+- Advanced progress tracking features
 
 ## [1.1.0] - 2025-01-27
 
@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Intelligent Task Creation**: Group TRIO samples and create individual SNP tasks
 - **Comprehensive Error Handling**: Robust validation and error reporting for batch operations
 - **Output File Generation**: JSON result files for upload and task creation tracking
+- **Progress Bars**: Real-time progress tracking for file uploads with transfer rate and ETA
+- **Configurable Progress**: Option to disable progress bars with `--no-progress` flag
 
 ### Features
 - **Batch Upload**: Upload multiple VCF files from CSV specification
@@ -39,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for TRIO mode with father/mother file handling
 - Support for SNP mode with individual sample processing
 - Automatic handling of empty/NA values in CSV columns
+- Custom `UploadProgressBar` class with tqdm integration
+- Graceful fallback when tqdm is not available
+- Progress tracking for both individual and batch uploads
 
 ### Documentation
 - Complete batch processing guide (`BATCH_USAGE.md`)
@@ -52,6 +57,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional columns: `upload_father`, `upload_mother`, `clinical_info`
 - Support for both TRIO and SNP analysis modes
 - Automatic handling of empty/NA values for optional family files
+
+### Progress Bar Features
+- **Real-time Progress**: Shows upload progress with file size and transfer rate
+- **Batch Progress**: Tracks progress across multiple files in batch operations
+- **Configurable**: Can be disabled with `--no-progress` flag
+- **Cross-platform**: Works on Windows, macOS, and Linux
+- **Graceful Fallback**: Falls back to simple output if tqdm is not available
 
 ## [1.0.0] - 2025-06-30
 

@@ -9,3 +9,8 @@ upload_results.json
 task_results.json
 simulation_results.json
 task_config*.json
+debug*.py
+test*.py
+*.vcf.gz
+*.vcf.gz.tbi
+*.vcf

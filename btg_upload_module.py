@@ -5,10 +5,47 @@ Handles file uploads to the Virtual Geneticist API.
 
 import requests
 import os
+import sys
+from tqdm import tqdm
 
 # === CONFIGURATION ===
 BASE_URL = "https://vg-api.btgenomics.com:8082/api"
 UPLOAD_URL = f"{BASE_URL}/upload"
+
+class UploadProgressBar:
+    """Custom progress bar for file uploads."""
+    
+    def __init__(self, filename, total_size):
+        self.filename = filename
+        self.total_size = total_size
+        self.pbar = None
+        self.uploaded_bytes = 0
+        
+    def __enter__(self):
+        self.pbar = tqdm(
+            total=self.total_size,
+            unit='B',
+            unit_scale=True,
+            unit_divisor=1024,
+            desc=f"📤 Uploading {os.path.basename(self.filename)}",
+            bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]'
+        )
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.pbar:
+            self.pbar.close()
+            
+    def update(self, chunk_size):
+        """Update progress bar with uploaded chunk."""
+        self.uploaded_bytes += chunk_size
+        if self.pbar:
+            self.pbar.update(chunk_size)
+            
+    def set_description(self, desc):
+        """Update the progress bar description."""
+        if self.pbar:
+            self.pbar.set_description(desc)
 
 def read_token_from_file(token_file_path):
     """Read token from a text file."""
@@ -40,11 +77,14 @@ def validate_file(file_path):
     if file_ext not in supported_extensions:
         raise ValueError(f"Unsupported file type: {file_ext}. Supported types: {', '.join(supported_extensions)}")
 
-def upload_file(file_path, token, prefix=None):
-    """Upload a file to the Virtual Geneticist API."""
+def upload_file(file_path, token, prefix=None, show_progress=True):
+    """Upload a file to the Virtual Geneticist API with progress bar."""
     
     # Validate the file
     validate_file(file_path)
+    
+    # Get file size for progress bar
+    file_size = os.path.getsize(file_path)
     
     # Prepare headers
     headers = {
@@ -52,25 +92,55 @@ def upload_file(file_path, token, prefix=None):
     }
     
     # Prepare form data
-    files = {
-        'file': open(file_path, 'rb')
-    }
-    
     data = {}
     if prefix:
         data['prefix'] = prefix
     
     try:
-        print(f"Uploading {file_path}...")
-        response = requests.post(UPLOAD_URL, headers=headers, files=files, data=data)
-        
-        # Close the file
-        files['file'].close()
+        # Use progress bar if requested and tqdm is available
+        if show_progress and 'tqdm' in sys.modules:
+            with UploadProgressBar(file_path, file_size) as progress_bar:
+                # Create a custom file object that tracks progress
+                class ProgressFile:
+                    def __init__(self, file_path, progress_bar):
+                        self.file = open(file_path, 'rb')
+                        self.progress_bar = progress_bar
+                        self.name = os.path.basename(file_path)
+                        
+                    def read(self, size=-1):
+                        chunk = self.file.read(size)
+                        if chunk and self.progress_bar:
+                            self.progress_bar.update(len(chunk))
+                        return chunk
+                        
+                    def close(self):
+                        self.file.close()
+                        
+                    def __enter__(self):
+                        return self
+                        
+                    def __exit__(self, exc_type, exc_val, exc_tb):
+                        self.close()
+                
+                files = {
+                    'file': ProgressFile(file_path, progress_bar)
+                }
+                
+                response = requests.post(UPLOAD_URL, headers=headers, files=files, data=data)
+                files['file'].close()
+        else:
+            # Fallback to regular upload without progress bar
+            files = {
+                'file': open(file_path, 'rb')
+            }
+            response = requests.post(UPLOAD_URL, headers=headers, files=files, data=data)
+            files['file'].close()
         
         # Handle response
         if response.status_code == 200:
             result = response.json()
-            print("✅ Upload successful!")
+            if not show_progress:
+                print("✅ Upload successful!")
             print(f"Remote path: {result.get('upload_path', 'N/A')}")
             return result
         else:
@@ -89,7 +159,7 @@ def upload_file(file_path, token, prefix=None):
         print(f"❌ Unexpected error: {e}")
         return None
 
-def run_upload_module(token_file_path=None, file_path=None, prefix=None):
+def run_upload_module(token_file_path=None, file_path=None, prefix=None, show_progress=True):
     """Run the file upload module."""
     print("\n" + "="*60)
     print("📤 FILE UPLOAD MODULE")
@@ -141,7 +211,7 @@ def run_upload_module(token_file_path=None, file_path=None, prefix=None):
         return
     
     # Perform upload
-    result = upload_file(file_path, token, prefix)
+    result = upload_file(file_path, token, prefix, show_progress)
     
     if result:
         print("\n🎉 Upload completed successfully!")
