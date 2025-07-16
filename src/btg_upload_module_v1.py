@@ -1,6 +1,6 @@
 """
-Virtual Geneticist API - Upload Module (v1.0.0 style)
-Simple upload without timeouts or retry logic.
+Virtual Geneticist API - v1.0.0 Style Upload Module
+Simple upload without timeouts or retry logic (like the original working version).
 """
 
 import requests
@@ -41,7 +41,7 @@ def validate_file(file_path):
     if file_ext not in supported_extensions:
         raise ValueError(f"Unsupported file type: {file_ext}. Supported types: {', '.join(supported_extensions)}")
 
-def upload_file(file_path, token, prefix=None):
+def upload_file_v1(file_path, token, prefix=None):
     """Upload a file using v1.0.0 style - simple, no timeouts, no retries."""
     
     # Validate the file
@@ -97,10 +97,10 @@ def upload_file(file_path, token, prefix=None):
         print(f"❌ Unexpected error: {e}")
         return None
 
-def run_upload_module(token_file_path=None, file_path=None, prefix=None):
+def run_upload_module_v1(token_file_path=None, file_path=None, prefix=None):
     """Run the v1.0.0 style file upload module."""
     print("\n" + "="*60)
-    print("📤 FILE UPLOAD MODULE (v1.0.0 style)")
+    print("📤 V1.0.0 STYLE FILE UPLOAD MODULE")
     print("="*60)
     
     # Get token
@@ -149,7 +149,7 @@ def run_upload_module(token_file_path=None, file_path=None, prefix=None):
         return
     
     # Perform upload
-    result = upload_file(file_path, token, prefix)
+    result = upload_file_v1(file_path, token, prefix)
     
     if result:
         print("\n🎉 Upload completed successfully!")
@@ -162,4 +162,4 @@ if __name__ == "__main__":
     token_file = sys.argv[1] if len(sys.argv) > 1 else None
     file_path = sys.argv[2] if len(sys.argv) > 2 else None
     prefix = sys.argv[3] if len(sys.argv) > 3 else None
-    run_upload_module(token_file, file_path, prefix) 
+    run_upload_module_v1(token_file, file_path, prefix) 

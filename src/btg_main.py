@@ -13,7 +13,7 @@ try:
     from btg_upload_module import run_upload_module
     from btg_task_module import run_create_task_module
     from btg_status_module import run_status_check_module
-    from btg_batch_module import run_batch_upload_module, run_batch_task_module, run_batch_full_module
+    from btg_batch_module import run_batch_full_module
 except ImportError as e:
     print(f"❌ Error importing modules: {e}")
     print("Make sure all module files are in the same directory:")
@@ -39,7 +39,7 @@ def show_configuration():
     print("📋 Task module uses external JSON configuration file")
     print("📤 Upload module accepts file_path and prefix parameters")
     print("📊 Status module accepts submission_id parameter")
-    print("🚀 Batch module processes CSV files for bulk operations")
+    print("🚀 Batch module processes CSV files for full batch operations (upload + tasks)")
 
 def interactive_mode(token_file_path=None):
     """Run the client in interactive mode with menu."""
@@ -58,13 +58,11 @@ def interactive_mode(token_file_path=None):
         print("1. 📤 Upload File")
         print("2. 🔬 Create Analysis Task")
         print("3. 📊 Check Task Status")
-        print("4. 🚀 Batch Upload Files")
-        print("5. 🔬 Batch Create Tasks")
-        print("6. 🚀 Full Batch Process (Upload + Tasks)")
-        print("7. ⚙️  Show Current Configuration")
-        print("8. 🚪 Exit")
+        print("4. 🚀 Full Batch Process (Upload + Tasks)")
+        print("5. ⚙️  Show Current Configuration")
+        print("6. 🚪 Exit")
         
-        choice = input("\nEnter your choice (1-8): ").strip()
+        choice = input("\nEnter your choice (1-6): ").strip()
         
         if choice == "1":
             run_upload_module(token_file_path, show_progress=not args.no_progress)
@@ -76,20 +74,14 @@ def interactive_mode(token_file_path=None):
             run_status_check_module(token_file_path)
         elif choice == "4":
             csv_file = input("Enter CSV file path: ").strip()
-            run_batch_upload_module(token_file_path, csv_file, show_progress=not args.no_progress)
+            run_batch_full_module(token_file_path, csv_file)
         elif choice == "5":
-            csv_file = input("Enter CSV file path: ").strip()
-            run_batch_task_module(token_file_path, csv_file)
-        elif choice == "6":
-            csv_file = input("Enter CSV file path: ").strip()
-            run_batch_full_module(token_file_path, csv_file, show_progress=not args.no_progress)
-        elif choice == "7":
             show_configuration()
-        elif choice == "8":
+        elif choice == "6":
             print("\n👋 Thank you for using the Virtual Geneticist API Client!")
             break
         else:
-            print("❌ Invalid choice. Please enter a number between 1 and 8.")
+            print("❌ Invalid choice. Please enter a number between 1 and 6.")
         
         input("\nPress Enter to continue...")
 
@@ -104,8 +96,6 @@ Examples:
   python btg_client.py upload --token token.txt --file-path /path/to/file.vcf.gz --prefix sample-P    # Upload with parameters
   python btg_client.py task   --token token.txt --task-config task_config.json                        # Run task creation module
   python btg_client.py status --token token.txt --submission-id b48e943c42659c5011fa571d80d0e177      # Run status checking module
-  python btg_client.py batch-upload --token token.txt --csv-file samples.csv                          # Batch upload files (use full paths in CSV)
-  python btg_client.py batch-task --token token.txt --csv-file samples.csv                            # Batch create tasks
   python btg_client.py batch-full --token token.txt --csv-file samples.csv                            # Full batch process
   python btg_client.py config --token token.txt                                                       # Show current configuration
   python btg_client.py --token token.txt --interactive                                                # Run in interactive mode
@@ -155,8 +145,8 @@ Examples:
     parser.add_argument(
         'module',
         nargs='?',
-        choices=['upload', 'task', 'status', 'config', 'batch-upload', 'batch-task', 'batch-full'],
-        help='Module to run: upload, task, status, config, batch-upload, batch-task, or batch-full'
+        choices=['upload', 'task', 'status', 'config', 'batch-full'],
+        help='Module to run: upload, task, status, config, or batch-full'
     )
     
     parser.add_argument(
@@ -183,21 +173,11 @@ Examples:
             print(f"✅ New submission ID saved: {submission_id}")
     elif args.module == 'status':
         run_status_check_module(args.token, args.submission_id)
-    elif args.module == 'batch-upload':
-        if not args.csv_file:
-            print("❌ CSV file path is required for batch upload. Use --csv-file option.")
-            return
-        run_batch_upload_module(args.token, args.csv_file, show_progress=not args.no_progress)
-    elif args.module == 'batch-task':
-        if not args.csv_file:
-            print("❌ CSV file path is required for batch task creation. Use --csv-file option.")
-            return
-        run_batch_task_module(args.token, args.csv_file)
     elif args.module == 'batch-full':
         if not args.csv_file:
             print("❌ CSV file path is required for batch full process. Use --csv-file option.")
             return
-        run_batch_full_module(args.token, args.csv_file, show_progress=not args.no_progress)
+        run_batch_full_module(args.token, args.csv_file)
     elif args.module == 'config':
         show_configuration()
 

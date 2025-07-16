@@ -1,6 +1,6 @@
 """
-Virtual Geneticist API - Batch Processing Module (v1.0.0 style)
-Uses simple upload without timeouts or retry logic for all required files.
+Virtual Geneticist API - v1.0.0 Style Batch Processing Module
+Uses simple upload without timeouts or retry logic (like the original working version).
 """
 
 import csv
@@ -57,7 +57,7 @@ def validate_csv_structure(data: List[Dict[str, str]]) -> List[str]:
     
     return errors
 
-def upload_file_batch(file_path: str, token: str, prefix: str = None) -> Optional[str]:
+def upload_file_v1_batch(file_path: str, token: str, prefix: str = None) -> Optional[str]:
     """Upload a file using v1.0.0 style - simple, no timeouts, no retries."""
     
     if not os.path.exists(file_path):
@@ -66,8 +66,8 @@ def upload_file_batch(file_path: str, token: str, prefix: str = None) -> Optiona
     
     # Import the v1.0.0 style upload function
     try:
-        from btg_upload_module import upload_file
-        result = upload_file(file_path, token, prefix)
+        from btg_upload_module_v1 import upload_file_v1
+        result = upload_file_v1(file_path, token, prefix)
         if result:
             return result.get('upload_path')
         return None
@@ -114,10 +114,18 @@ def process_samples_individual(data: List[Dict[str, str]]) -> List[Dict[str, str
     """Process each sample row individually for task creation."""
     processed_samples = []
     
+    # Add timestamp to make titles unique
+    import time
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    
     for i, row in enumerate(data):
-        # Create a task config for this sample
+        # Create a task config for this sample with unique title
+        original_title = row['title']
+        unique_title = f"{original_title}_{timestamp}"
+        
         task_config = {
-            'title': row['title'],
+            'title': unique_title,
             'project': row['project'],
             'vcf_mode': row['vcf_mode'],
             'assembly': row['assembly'],
@@ -136,10 +144,54 @@ def process_samples_individual(data: List[Dict[str, str]]) -> List[Dict[str, str
     
     return processed_samples
 
-def run_batch_full_module(token_file_path: str, csv_file_path: str):
+def create_task_v1_batch(config: Dict[str, str], token: str) -> Optional[str]:
+    """Create a task and return the submission ID."""
+    
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+    
+    # Remove None values from config
+    task_data = {k: v for k, v in config.items() if v is not None}
+    
+    try:
+        print(f"🔬 Creating task for: {task_data['title']}")
+        print(f"Mode: {task_data['vcf_mode']}")
+        print(f"Assembly: {task_data['assembly']}")
+        
+        # Simple request - NO TIMEOUTS SPECIFIED (like v1.0.0)
+        response = requests.post(CREATE_TASK_URL, headers=headers, json=task_data)
+        
+        if response.status_code == 200:
+            result = response.json()
+            submission_id = result.get('submission_id')
+            print(f"✅ Task created successfully: {submission_id}")
+            return submission_id
+        else:
+            print(f"❌ Task creation failed: {response.status_code}")
+            try:
+                error_msg = response.json().get('message', 'Unknown error')
+                print(f"Error message: {error_msg}")
+                
+                # Handle duplicate submission error
+                if "already been submitted" in error_msg:
+                    print(f"💡 This task has already been submitted. The API prevents duplicate submissions.")
+                    print(f"💡 Try using different titles or check if the task already exists.")
+                    return None
+                    
+            except:
+                print(f"Response text: {response.text}")
+            return None
+            
+    except Exception as e:
+        print(f"❌ Error creating task: {e}")
+        return None
+
+def run_batch_full_v1_module(token_file_path: str, csv_file_path: str):
     """Run the v1.0.0 style batch full module (upload + task creation)."""
     print("\n" + "="*60)
-    print("🚀 BATCH PROCESSING MODULE (v1.0.0 style)")
+    print("🚀 V1.0.0 STYLE BATCH PROCESSING MODULE")
     print("="*60)
     print("This will upload all files and create tasks in one operation")
     print("Using simple upload - no timeouts, no retries (like v1.0.0)")
@@ -204,7 +256,7 @@ def run_batch_full_module(token_file_path: str, csv_file_path: str):
                     continue
                 
                 # Upload file using v1.0.0 style
-                remote_path = upload_file_batch(file_path, token)
+                remote_path = upload_file_v1_batch(file_path, token)
                 
                 if remote_path:
                     uploaded_files[file_path] = remote_path
@@ -251,39 +303,15 @@ def run_batch_full_module(token_file_path: str, csv_file_path: str):
                 sample_config['upload_mother'] = uploaded_files[sample_config['upload_mother']]
             
             # Create task
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json"
-            }
-            task_data = {k: v for k, v in sample_config.items() if v is not None}
-            try:
-                print(f"🔬 Creating task for: {task_data['title']}")
-                print(f"Mode: {task_data['vcf_mode']}")
-                print(f"Assembly: {task_data['assembly']}")
-                response = requests.post(CREATE_TASK_URL, headers=headers, json=task_data)
-                if response.status_code == 200:
-                    result = response.json()
-                    submission_id = result.get('submission_id')
-                    print(f"✅ Task created successfully: {submission_id}")
-                    created_tasks.append({
-                        'title': sample_config['title'],
-                        'submission_id': submission_id
-                    })
-                    print(f"✅ Task created: {sample_config['title']}")
-                else:
-                    print(f"❌ Task creation failed: {response.status_code}")
-                    try:
-                        error_msg = response.json().get('message', 'Unknown error')
-                        print(f"Error message: {error_msg}")
-                        if "already been submitted" in error_msg:
-                            print(f"💡 This task has already been submitted. The API prevents duplicate submissions.")
-                            print(f"💡 Try using different titles or check if the task already exists.")
-                    except:
-                        print(f"Response text: {response.text}")
-                    failed_tasks.append(sample_config['title'])
-                    print(f"❌ Failed to create task: {sample_config['title']}")
-            except Exception as e:
-                print(f"❌ Error creating task: {e}")
+            submission_id = create_task_v1_batch(sample_config, token)
+            
+            if submission_id:
+                created_tasks.append({
+                    'title': sample_config['title'],
+                    'submission_id': submission_id
+                })
+                print(f"✅ Task created: {sample_config['title']}")
+            else:
                 failed_tasks.append(sample_config['title'])
                 print(f"❌ Failed to create task: {sample_config['title']}")
         
@@ -313,10 +341,10 @@ def run_batch_full_module(token_file_path: str, csv_file_path: str):
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) != 2 and len(sys.argv) != 3:
-        print("Usage: python btg_batch_module.py <token_file> <csv_file>")
+    if len(sys.argv) != 3:
+        print("Usage: python btg_batch_module_v1.py <token_file> <csv_file>")
         sys.exit(1)
     
     token_file = sys.argv[1]
     csv_file = sys.argv[2]
-    run_batch_full_module(token_file, csv_file) 
+    run_batch_full_v1_module(token_file, csv_file) 
