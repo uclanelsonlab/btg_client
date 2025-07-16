@@ -1,49 +1,21 @@
 """
-Virtual Geneticist API - Upload Module
-Handles file uploads to the Virtual Geneticist API.
+Virtual Geneticist API - Ultra Reliable Upload Module
+Handles file uploads with very long timeouts for large files.
 """
 
 import requests
 import os
 import sys
 import time
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 # === CONFIGURATION ===
 BASE_URL = "https://vg-api.btgenomics.com:8082/api"
 UPLOAD_URL = f"{BASE_URL}/upload"
 
-# Timeout configuration for large files
-CONNECT_TIMEOUT = 60  # seconds to establish connection
-READ_TIMEOUT = 1800   # seconds for read operations (30 minutes for large files)
-UPLOAD_TIMEOUT = 3600 # seconds for complete upload (60 minutes)
-
-# Retry configuration
-MAX_RETRIES = 3
-BACKOFF_FACTOR = 2
-STATUS_FORCELIST = [500, 502, 503, 504, 408, 429]
-
-def create_session_with_retries():
-    """Create a requests session with retry logic and timeouts."""
-    session = requests.Session()
-    
-    # Configure retry strategy
-    retry_strategy = Retry(
-        total=MAX_RETRIES,
-        status_forcelist=STATUS_FORCELIST,
-        backoff_factor=BACKOFF_FACTOR,
-        allowed_methods=["POST", "GET", "HEAD"]
-    )
-    
-    # Mount adapter with retry strategy
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
-    
-    return session
-
-# Removed progress bar class - using simple upload instead
+# Ultra-long timeouts for large files
+CONNECT_TIMEOUT = 60    # 60 seconds to establish connection
+READ_TIMEOUT = 1800     # 30 minutes for read operations
+UPLOAD_TIMEOUT = 3600   # 60 minutes for complete upload
 
 def read_token_from_file(token_file_path):
     """Read token from a text file."""
@@ -75,8 +47,8 @@ def validate_file(file_path):
     if file_ext not in supported_extensions:
         raise ValueError(f"Unsupported file type: {file_ext}. Supported types: {', '.join(supported_extensions)}")
 
-def upload_file(file_path, token, prefix=None, show_progress=False, max_retries=3):
-    """Upload a file to the Virtual Geneticist API without progress bar."""
+def upload_file_ultra(file_path, token, prefix=None, max_retries=2):
+    """Upload a file with ultra-long timeouts for large files."""
     
     # Validate the file
     validate_file(file_path)
@@ -96,28 +68,26 @@ def upload_file(file_path, token, prefix=None, show_progress=False, max_retries=
         data['prefix'] = prefix
     
     print(f"📤 Uploading {os.path.basename(file_path)} ({file_size_mb:.1f}MB)...")
-    
-    # Use ultra-long timeouts for all files to handle network issues
-    connect_timeout = CONNECT_TIMEOUT
-    read_timeout = READ_TIMEOUT
-    upload_timeout = UPLOAD_TIMEOUT
+    print(f"⏱️  Using ultra-long timeouts: {CONNECT_TIMEOUT}s connect, {READ_TIMEOUT//60}min read")
     
     for attempt in range(max_retries):
         try:
-            # Create session with retry logic
-            session = create_session_with_retries()
-            
-            # Simple upload without progress tracking
+            # Simple upload with ultra-long timeouts
             files = {
                 'file': open(file_path, 'rb')
             }
             
-            response = session.post(
+            # Use ultra-long timeout for all files
+            timeout = (CONNECT_TIMEOUT, UPLOAD_TIMEOUT)
+            
+            print(f"🔄 Attempt {attempt + 1}/{max_retries} - Starting upload...")
+            
+            response = requests.post(
                 UPLOAD_URL, 
                 headers=headers, 
                 files=files, 
                 data=data,
-                timeout=(connect_timeout, upload_timeout)
+                timeout=timeout
             )
             
             files['file'].close()
@@ -143,17 +113,18 @@ def upload_file(file_path, token, prefix=None, show_progress=False, max_retries=
         except requests.exceptions.Timeout as e:
             print(f"❌ Timeout error (attempt {attempt + 1}/{max_retries}): {e}")
             if attempt < max_retries - 1:
-                wait_time = BACKOFF_FACTOR ** attempt
+                wait_time = 5 * (attempt + 1)  # 5s, then 10s
                 print(f"⏳ Waiting {wait_time} seconds before retry...")
                 time.sleep(wait_time)
             else:
                 print("❌ Max retries exceeded. Upload failed.")
+                print("💡 Try uploading during off-peak hours or check your network connection.")
                 return None
                 
         except requests.exceptions.RequestException as e:
             print(f"❌ Network error (attempt {attempt + 1}/{max_retries}): {e}")
             if attempt < max_retries - 1:
-                wait_time = BACKOFF_FACTOR ** attempt
+                wait_time = 5 * (attempt + 1)
                 print(f"⏳ Waiting {wait_time} seconds before retry...")
                 time.sleep(wait_time)
             else:
@@ -166,10 +137,10 @@ def upload_file(file_path, token, prefix=None, show_progress=False, max_retries=
     
     return None
 
-def run_upload_module(token_file_path=None, file_path=None, prefix=None, show_progress=True):
-    """Run the file upload module."""
+def run_upload_module_ultra(token_file_path=None, file_path=None, prefix=None):
+    """Run the ultra-reliable file upload module."""
     print("\n" + "="*60)
-    print("📤 FILE UPLOAD MODULE")
+    print("📤 ULTRA-RELIABLE FILE UPLOAD MODULE")
     print("="*60)
     
     # Get token
@@ -218,7 +189,7 @@ def run_upload_module(token_file_path=None, file_path=None, prefix=None, show_pr
         return
     
     # Perform upload
-    result = upload_file(file_path, token, prefix, show_progress)
+    result = upload_file_ultra(file_path, token, prefix)
     
     if result:
         print("\n🎉 Upload completed successfully!")
@@ -231,4 +202,4 @@ if __name__ == "__main__":
     token_file = sys.argv[1] if len(sys.argv) > 1 else None
     file_path = sys.argv[2] if len(sys.argv) > 2 else None
     prefix = sys.argv[3] if len(sys.argv) > 3 else None
-    run_upload_module(token_file, file_path, prefix) 
+    run_upload_module_ultra(token_file, file_path, prefix) 
