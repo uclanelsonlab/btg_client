@@ -6,11 +6,43 @@ Handles file uploads to the Virtual Geneticist API.
 import requests
 import os
 import sys
+import time
 from tqdm import tqdm
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # === CONFIGURATION ===
 BASE_URL = "https://vg-api.btgenomics.com:8082/api"
 UPLOAD_URL = f"{BASE_URL}/upload"
+
+# Timeout configuration for large files
+CONNECT_TIMEOUT = 30  # seconds to establish connection
+READ_TIMEOUT = 600    # seconds for read operations (10 minutes for large files)
+UPLOAD_TIMEOUT = 900  # seconds for complete upload (15 minutes)
+
+# Retry configuration
+MAX_RETRIES = 3
+BACKOFF_FACTOR = 2
+STATUS_FORCELIST = [500, 502, 503, 504, 408, 429]
+
+def create_session_with_retries():
+    """Create a requests session with retry logic and timeouts."""
+    session = requests.Session()
+    
+    # Configure retry strategy
+    retry_strategy = Retry(
+        total=MAX_RETRIES,
+        status_forcelist=STATUS_FORCELIST,
+        backoff_factor=BACKOFF_FACTOR,
+        allowed_methods=["POST", "GET", "HEAD"]
+    )
+    
+    # Mount adapter with retry strategy
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    
+    return session
 
 class UploadProgressBar:
     """Custom progress bar for file uploads."""
@@ -77,8 +109,8 @@ def validate_file(file_path):
     if file_ext not in supported_extensions:
         raise ValueError(f"Unsupported file type: {file_ext}. Supported types: {', '.join(supported_extensions)}")
 
-def upload_file(file_path, token, prefix=None, show_progress=True):
-    """Upload a file to the Virtual Geneticist API with progress bar."""
+def upload_file(file_path, token, prefix=None, show_progress=True, max_retries=3):
+    """Upload a file to the Virtual Geneticist API with progress bar and retry logic."""
     
     # Validate the file
     validate_file(file_path)
@@ -96,68 +128,118 @@ def upload_file(file_path, token, prefix=None, show_progress=True):
     if prefix:
         data['prefix'] = prefix
     
-    try:
-        # Use progress bar if requested and tqdm is available
-        if show_progress and 'tqdm' in sys.modules:
-            with UploadProgressBar(file_path, file_size) as progress_bar:
-                # Create a custom file object that tracks progress
-                class ProgressFile:
-                    def __init__(self, file_path, progress_bar):
-                        self.file = open(file_path, 'rb')
-                        self.progress_bar = progress_bar
-                        self.name = os.path.basename(file_path)
-                        
-                    def read(self, size=-1):
-                        chunk = self.file.read(size)
-                        if chunk and self.progress_bar:
-                            self.progress_bar.update(len(chunk))
-                        return chunk
-                        
-                    def close(self):
-                        self.file.close()
-                        
-                    def __enter__(self):
-                        return self
-                        
-                    def __exit__(self, exc_type, exc_val, exc_tb):
-                        self.close()
-                
-                files = {
-                    'file': ProgressFile(file_path, progress_bar)
-                }
-                
-                response = requests.post(UPLOAD_URL, headers=headers, files=files, data=data)
-                files['file'].close()
-        else:
-            # Fallback to regular upload without progress bar
-            files = {
-                'file': open(file_path, 'rb')
-            }
-            response = requests.post(UPLOAD_URL, headers=headers, files=files, data=data)
-            files['file'].close()
-        
-        # Handle response
-        if response.status_code == 200:
-            result = response.json()
-            if not show_progress:
-                print("✅ Upload successful!")
-            print(f"Remote path: {result.get('upload_path', 'N/A')}")
-            return result
-        else:
-            print(f"❌ Upload failed with status code: {response.status_code}")
-            try:
-                error_msg = response.json().get('message', 'Unknown error')
-                print(f"Error message: {error_msg}")
-            except:
-                print(f"Response text: {response.text}")
-            return None
+    # Calculate timeouts based on file size
+    # For large files (>100MB), use longer timeouts
+    if file_size > 100 * 1024 * 1024:  # 100MB
+        connect_timeout = CONNECT_TIMEOUT
+        read_timeout = READ_TIMEOUT
+        upload_timeout = UPLOAD_TIMEOUT
+    else:
+        connect_timeout = 30
+        read_timeout = 300
+        upload_timeout = 600
+    
+    for attempt in range(max_retries):
+        try:
+            # Create session with retry logic
+            session = create_session_with_retries()
             
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Network error: {e}")
-        return None
-    except Exception as e:
-        print(f"❌ Unexpected error: {e}")
-        return None
+            # Use progress bar if requested and tqdm is available
+            if show_progress and 'tqdm' in sys.modules:
+                with UploadProgressBar(file_path, file_size) as progress_bar:
+                    # Create a custom file object that tracks progress
+                    class ProgressFile:
+                        def __init__(self, file_path, progress_bar):
+                            self.file = open(file_path, 'rb')
+                            self.progress_bar = progress_bar
+                            self.name = os.path.basename(file_path)
+                            
+                        def read(self, size=-1):
+                            chunk = self.file.read(size)
+                            if chunk and self.progress_bar:
+                                self.progress_bar.update(len(chunk))
+                            return chunk
+                            
+                        def close(self):
+                            self.file.close()
+                            
+                        def __enter__(self):
+                            return self
+                            
+                        def __exit__(self, exc_type, exc_val, exc_tb):
+                            self.close()
+                    
+                    files = {
+                        'file': ProgressFile(file_path, progress_bar)
+                    }
+                    
+                    # Use session with timeouts
+                    response = session.post(
+                        UPLOAD_URL, 
+                        headers=headers, 
+                        files=files, 
+                        data=data,
+                        timeout=(connect_timeout, upload_timeout)
+                    )
+                    files['file'].close()
+            else:
+                # Fallback to regular upload without progress bar
+                files = {
+                    'file': open(file_path, 'rb')
+                }
+                response = session.post(
+                    UPLOAD_URL, 
+                    headers=headers, 
+                    files=files, 
+                    data=data,
+                    timeout=(connect_timeout, upload_timeout)
+                )
+                files['file'].close()
+            
+            # Handle response
+            if response.status_code == 200:
+                result = response.json()
+                if not show_progress:
+                    print("✅ Upload successful!")
+                print(f"Remote path: {result.get('upload_path', 'N/A')}")
+                return result
+            else:
+                print(f"❌ Upload failed with status code: {response.status_code}")
+                try:
+                    error_msg = response.json().get('message', 'Unknown error')
+                    print(f"Error message: {error_msg}")
+                except:
+                    print(f"Response text: {response.text}")
+                
+                # Don't retry on client errors (4xx)
+                if 400 <= response.status_code < 500:
+                    return None
+                    
+        except requests.exceptions.Timeout as e:
+            print(f"❌ Timeout error (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                wait_time = BACKOFF_FACTOR ** attempt
+                print(f"⏳ Waiting {wait_time} seconds before retry...")
+                time.sleep(wait_time)
+            else:
+                print("❌ Max retries exceeded. Upload failed.")
+                return None
+                
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Network error (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                wait_time = BACKOFF_FACTOR ** attempt
+                print(f"⏳ Waiting {wait_time} seconds before retry...")
+                time.sleep(wait_time)
+            else:
+                print("❌ Max retries exceeded. Upload failed.")
+                return None
+                
+        except Exception as e:
+            print(f"❌ Unexpected error: {e}")
+            return None
+    
+    return None
 
 def run_upload_module(token_file_path=None, file_path=None, prefix=None, show_progress=True):
     """Run the file upload module."""

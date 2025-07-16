@@ -65,7 +65,7 @@ def upload_file_batch(file_path: str, token: str, prefix: str = None, show_progr
     
     # Import the upload function from the upload module
     try:
-        from btg_upload_module import upload_file
+        from btg_upload_module import upload_file, create_session_with_retries
         result = upload_file(file_path, token, prefix, show_progress)
         if result:
             return result.get('upload_path')
@@ -86,7 +86,15 @@ def upload_file_batch(file_path: str, token: str, prefix: str = None, show_progr
         
         try:
             print(f"📤 Uploading {file_path}...")
-            response = requests.post(UPLOAD_URL, headers=headers, files=files, data=data)
+            # Use session with retries for fallback upload
+            session = create_session_with_retries()
+            response = session.post(
+                UPLOAD_URL, 
+                headers=headers, 
+                files=files, 
+                data=data,
+                timeout=(30, 600)  # 30s connect, 10min read timeout
+            )
             
             files['file'].close()
             
@@ -158,7 +166,19 @@ def create_task_batch(config: Dict[str, str], token: str) -> Optional[str]:
         print(f"Mode: {task_data['vcf_mode']}")
         print(f"Assembly: {task_data['assembly']}")
         
-        response = requests.post(CREATE_TASK_URL, headers=headers, json=task_data)
+        # Use session with retries for task creation
+        try:
+            from btg_upload_module import create_session_with_retries
+            session = create_session_with_retries()
+            response = session.post(
+                CREATE_TASK_URL, 
+                headers=headers, 
+                json=task_data,
+                timeout=(30, 120)  # 30s connect, 2min read timeout
+            )
+        except ImportError:
+            # Fallback to regular requests
+            response = requests.post(CREATE_TASK_URL, headers=headers, json=task_data)
         
         if response.status_code == 200:
             result = response.json()

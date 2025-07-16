@@ -10,9 +10,15 @@ All notable changes to the BT Genomics Virtual Geneticist API Client will be doc
 - **Project structure reorganization**: Moved source files to `src/` directory, tests to `tests/`, documentation to `docs/`, and examples to `examples/`
 - **New main entry point**: Created `btg_client.py` as the primary entry point for the application
 - **Setup.py**: Added proper Python package configuration with dependencies and metadata
-- **Comprehensive documentation**: Added Docker usage guide, project structure documentation, and quick start guide
+- **Comprehensive documentation**: Added Docker usage guide, project structure documentation, quick start guide, and upload improvements documentation
 - **CLI improvements**: Updated all help text and examples to reference the new `btg_client.py` entry point
 - **Enhanced examples**: Added various test files and sample configurations in the examples directory
+- **Major upload improvements for large files**:
+  - Dynamic timeout configuration (30s connect, 10min read, 15min upload for files >100MB)
+  - Automatic retry logic with exponential backoff (3 attempts)
+  - Session-based requests with retry adapter for better reliability
+  - Enhanced error handling with attempt tracking and clear timeout messages
+  - Better handling of network instability during large file uploads
 
 ### Changed
 - **CLI entry point**: Changed from `btg_main.py` to `btg_client.py` for better clarity
@@ -23,6 +29,11 @@ All notable changes to the BT Genomics Virtual Geneticist API Client will be doc
 ### Fixed
 - **Upload progress tracking**: Fixed issues with progress bar display during file uploads
 - **Module imports**: Ensured all modules work correctly with the new directory structure
+- **Upload timeout issues**: 
+  - Fixed "Connection to vg-api.btgenomics.com timed out" errors for large files
+  - Resolved upload failures for large VCF files (160-168MB)
+  - Improved handling of network instability during uploads
+  - Added automatic retry logic to handle temporary network issues
 
 ### Technical Improvements
 - **Modular architecture**: Improved code organization with proper package structure
