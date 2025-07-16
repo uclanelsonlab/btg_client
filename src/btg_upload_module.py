@@ -7,7 +7,6 @@ import requests
 import os
 import sys
 import time
-from tqdm import tqdm
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -44,40 +43,7 @@ def create_session_with_retries():
     
     return session
 
-class UploadProgressBar:
-    """Custom progress bar for file uploads."""
-    
-    def __init__(self, filename, total_size):
-        self.filename = filename
-        self.total_size = total_size
-        self.pbar = None
-        self.uploaded_bytes = 0
-        
-    def __enter__(self):
-        self.pbar = tqdm(
-            total=self.total_size,
-            unit='B',
-            unit_scale=True,
-            unit_divisor=1024,
-            desc=f"📤 Uploading {os.path.basename(self.filename)}",
-            bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]'
-        )
-        return self
-        
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.pbar:
-            self.pbar.close()
-            
-    def update(self, chunk_size):
-        """Update progress bar with uploaded chunk."""
-        self.uploaded_bytes += chunk_size
-        if self.pbar:
-            self.pbar.update(chunk_size)
-            
-    def set_description(self, desc):
-        """Update the progress bar description."""
-        if self.pbar:
-            self.pbar.set_description(desc)
+# Removed progress bar class - using simple upload instead
 
 def read_token_from_file(token_file_path):
     """Read token from a text file."""
@@ -109,14 +75,15 @@ def validate_file(file_path):
     if file_ext not in supported_extensions:
         raise ValueError(f"Unsupported file type: {file_ext}. Supported types: {', '.join(supported_extensions)}")
 
-def upload_file(file_path, token, prefix=None, show_progress=True, max_retries=3):
-    """Upload a file to the Virtual Geneticist API with progress bar and retry logic."""
+def upload_file(file_path, token, prefix=None, show_progress=False, max_retries=3):
+    """Upload a file to the Virtual Geneticist API without progress bar."""
     
     # Validate the file
     validate_file(file_path)
     
-    # Get file size for progress bar
+    # Get file size for info
     file_size = os.path.getsize(file_path)
+    file_size_mb = file_size / (1024 * 1024)
     
     # Prepare headers
     headers = {
@@ -128,8 +95,9 @@ def upload_file(file_path, token, prefix=None, show_progress=True, max_retries=3
     if prefix:
         data['prefix'] = prefix
     
+    print(f"📤 Uploading {os.path.basename(file_path)} ({file_size_mb:.1f}MB)...")
+    
     # Calculate timeouts based on file size
-    # For large files (>100MB), use longer timeouts
     if file_size > 100 * 1024 * 1024:  # 100MB
         connect_timeout = CONNECT_TIMEOUT
         read_timeout = READ_TIMEOUT
@@ -144,63 +112,25 @@ def upload_file(file_path, token, prefix=None, show_progress=True, max_retries=3
             # Create session with retry logic
             session = create_session_with_retries()
             
-            # Use progress bar if requested and tqdm is available
-            if show_progress and 'tqdm' in sys.modules:
-                with UploadProgressBar(file_path, file_size) as progress_bar:
-                    # Create a custom file object that tracks progress
-                    class ProgressFile:
-                        def __init__(self, file_path, progress_bar):
-                            self.file = open(file_path, 'rb')
-                            self.progress_bar = progress_bar
-                            self.name = os.path.basename(file_path)
-                            
-                        def read(self, size=-1):
-                            chunk = self.file.read(size)
-                            if chunk and self.progress_bar:
-                                self.progress_bar.update(len(chunk))
-                            return chunk
-                            
-                        def close(self):
-                            self.file.close()
-                            
-                        def __enter__(self):
-                            return self
-                            
-                        def __exit__(self, exc_type, exc_val, exc_tb):
-                            self.close()
-                    
-                    files = {
-                        'file': ProgressFile(file_path, progress_bar)
-                    }
-                    
-                    # Use session with timeouts
-                    response = session.post(
-                        UPLOAD_URL, 
-                        headers=headers, 
-                        files=files, 
-                        data=data,
-                        timeout=(connect_timeout, upload_timeout)
-                    )
-                    files['file'].close()
-            else:
-                # Fallback to regular upload without progress bar
-                files = {
-                    'file': open(file_path, 'rb')
-                }
-                response = session.post(
-                    UPLOAD_URL, 
-                    headers=headers, 
-                    files=files, 
-                    data=data,
-                    timeout=(connect_timeout, upload_timeout)
-                )
-                files['file'].close()
+            # Simple upload without progress tracking
+            files = {
+                'file': open(file_path, 'rb')
+            }
+            
+            response = session.post(
+                UPLOAD_URL, 
+                headers=headers, 
+                files=files, 
+                data=data,
+                timeout=(connect_timeout, upload_timeout)
+            )
+            
+            files['file'].close()
             
             # Handle response
             if response.status_code == 200:
                 result = response.json()
-                if not show_progress:
-                    print("✅ Upload successful!")
+                print(f"✅ Upload successful!")
                 print(f"Remote path: {result.get('upload_path', 'N/A')}")
                 return result
             else:

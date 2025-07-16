@@ -56,7 +56,7 @@ def validate_csv_structure(data: List[Dict[str, str]]) -> List[str]:
     
     return errors
 
-def upload_file_batch(file_path: str, token: str, prefix: str = None, show_progress: bool = True) -> Optional[str]:
+def upload_file_batch(file_path: str, token: str, prefix: str = None, show_progress: bool = False) -> Optional[str]:
     """Upload a file and return the remote path with progress bar."""
     
     if not os.path.exists(file_path):
@@ -205,7 +205,7 @@ def create_task_batch(config: Dict[str, str], token: str) -> Optional[str]:
         print(f"❌ Error creating task: {e}")
         return None
 
-def run_batch_upload_module(token_file_path: str, csv_file_path: str, show_progress: bool = True):
+def run_batch_upload_module(token_file_path: str, csv_file_path: str, show_progress: bool = False):
     """Run the batch upload module.
     
     Args:
@@ -369,7 +369,7 @@ def run_batch_task_module(token_file_path: str, csv_file_path: str, uploaded_fil
         print(f"❌ Error in batch task creation: {e}")
         return None
 
-def run_batch_full_module(token_file_path: str, csv_file_path: str, show_progress: bool = True):
+def run_batch_full_module(token_file_path: str, csv_file_path: str, show_progress: bool = False):
     """Run the complete batch process (upload + task creation)."""
     print("\n" + "="*70)
     print("🚀 BATCH PROCESSING MODULE")
