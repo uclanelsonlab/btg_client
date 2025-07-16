@@ -15,9 +15,9 @@ BASE_URL = "https://vg-api.btgenomics.com:8082/api"
 UPLOAD_URL = f"{BASE_URL}/upload"
 
 # Timeout configuration for large files
-CONNECT_TIMEOUT = 60  # seconds to establish connection
-READ_TIMEOUT = 1800   # seconds for read operations (30 minutes for large files)
-UPLOAD_TIMEOUT = 3600 # seconds for complete upload (60 minutes)
+CONNECT_TIMEOUT = 360  # seconds to establish connection (6 minutes)
+READ_TIMEOUT = 1800    # seconds for read operations (30 minutes for large files)
+UPLOAD_TIMEOUT = 3600  # seconds for complete upload (60 minutes)
 
 # Retry configuration
 MAX_RETRIES = 3
