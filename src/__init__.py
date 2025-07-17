@@ -2,7 +2,7 @@
 BTG Virtual Geneticist API Client Package
 """
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __author__ = "BT Genomics"
 __email__ = "support@btgenomics.com"
 
@@ -11,11 +11,7 @@ from .btg_main import main
 from .btg_upload_module import upload_file, run_upload_module
 from .btg_task_module import create_task, run_create_task_module
 from .btg_status_module import check_status, run_status_check_module
-from .btg_batch_module import (
-    run_batch_upload_module,
-    run_batch_task_module,
-    run_batch_full_module
-)
+from .btg_batch_module import run_batch_full_module
 
 __all__ = [
     "main",
@@ -25,7 +21,5 @@ __all__ = [
     "run_create_task_module",
     "check_status",
     "run_status_check_module",
-    "run_batch_upload_module",
-    "run_batch_task_module",
     "run_batch_full_module"
 ] 
